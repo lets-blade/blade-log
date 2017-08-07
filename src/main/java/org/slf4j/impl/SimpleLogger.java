@@ -188,7 +188,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      */
     public static final String SYSTEM_PREFIX = "com.blade.logger.";
 
-    public static final String LOG_KEY_PREFIX = SimpleLogger.SYSTEM_PREFIX + "impl.";
+    public static final String LOG_KEY_PREFIX = SimpleLogger.SYSTEM_PREFIX;
 
     public static final String CACHE_OUTPUT_STREAM_STRING_KEY = SimpleLogger.SYSTEM_PREFIX + "cacheOutputStream";
 
