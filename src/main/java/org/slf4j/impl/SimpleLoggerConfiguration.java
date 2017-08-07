@@ -1,9 +1,8 @@
 package org.slf4j.impl;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.DateFormat;
@@ -36,7 +35,7 @@ public class SimpleLoggerConfiguration {
     boolean showDateTime = SHOW_DATE_TIME_DEFAULT;
 
     private static final String DATE_TIME_FORMAT_STR_DEFAULT = "yyyy-MM-dd HH:mm:ss:SSS";
-    private static String dateTimeFormatStr = DATE_TIME_FORMAT_STR_DEFAULT;
+    private static       String dateTimeFormatStr            = DATE_TIME_FORMAT_STR_DEFAULT;
 
     DateTimeFormatter dateFormatter = null;
 
@@ -53,11 +52,11 @@ public class SimpleLoggerConfiguration {
     boolean levelInBrackets = LEVEL_IN_BRACKETS_DEFAULT;
 
     private static String LOG_FILE_DEFAULT = "System.out";
-    private String logFile = LOG_FILE_DEFAULT;
+    private        String logFile          = LOG_FILE_DEFAULT;
     OutputChoice outputChoice = null;
 
     private static final boolean CACHE_OUTPUT_STREAM_DEFAULT = false;
-    private boolean cacheOutputStream = CACHE_OUTPUT_STREAM_DEFAULT;
+    private              boolean cacheOutputStream           = CACHE_OUTPUT_STREAM_DEFAULT;
 
     private static final String WARN_LEVELS_STRING_DEFAULT = "WARN";
     String warnLevelString = WARN_LEVELS_STRING_DEFAULT;
@@ -169,8 +168,11 @@ public class SimpleLoggerConfiguration {
                 return new OutputChoice(OutputChoice.OutputChoiceType.SYS_OUT);
         } else {
             try {
-                FileOutputStream fos = new FileOutputStream(logFile);
-                PrintStream printStream = new PrintStream(fos);
+                if (!new File(logFile).getParentFile().exists()) {
+                    new File(logFile).getParentFile().mkdirs();
+                }
+                FileOutputStream fos         = new FileOutputStream(logFile);
+                PrintStream      printStream = new PrintStream(fos);
                 return new OutputChoice(printStream);
             } catch (FileNotFoundException e) {
                 Util.report("Could not open [" + logFile + "]. Defaulting to System.err", e);
