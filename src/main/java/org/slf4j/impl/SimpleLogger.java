@@ -310,6 +310,9 @@ public class SimpleLogger extends MarkerIgnoringBase {
     }
 
     void write(StringBuilder buf, Throwable t) {
+        if(CONFIG_PARAMS.outputChoice.outputChoiceType == OutputChoice.OutputChoiceType.FILE){
+            System.out.println(buf.toString());
+        }
         PrintStream targetStream = CONFIG_PARAMS.outputChoice.getTargetPrintStream();
 
         targetStream.println(buf.toString());
