@@ -322,6 +322,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
 
     protected void writeThrowable(Throwable t, PrintStream targetStream) {
         if (t != null) {
+            t.printStackTrace();
             t.printStackTrace(targetStream);
         }
     }
