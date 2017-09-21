@@ -147,16 +147,16 @@ public class SimpleLogger extends MarkerIgnoringBase {
 
     protected static final int LOG_LEVEL_TRACE = LocationAwareLogger.TRACE_INT;
     protected static final int LOG_LEVEL_DEBUG = LocationAwareLogger.DEBUG_INT;
-    protected static final int LOG_LEVEL_INFO = LocationAwareLogger.INFO_INT;
-    protected static final int LOG_LEVEL_WARN = LocationAwareLogger.WARN_INT;
+    protected static final int LOG_LEVEL_INFO  = LocationAwareLogger.INFO_INT;
+    protected static final int LOG_LEVEL_WARN  = LocationAwareLogger.WARN_INT;
     protected static final int LOG_LEVEL_ERROR = LocationAwareLogger.ERROR_INT;
     // The OFF level can only be used in configuration files to disable logging.
     // It has
     // no printing method associated with it in o.s.Logger interface.
-    protected static final int LOG_LEVEL_OFF = LOG_LEVEL_ERROR + 10;
+    protected static final int LOG_LEVEL_OFF   = LOG_LEVEL_ERROR + 10;
 
-    private static boolean INITIALIZED = false;
-    static SimpleLoggerConfiguration CONFIG_PARAMS = null;
+    private static boolean                   INITIALIZED   = false;
+    static         SimpleLoggerConfiguration CONFIG_PARAMS = null;
 
     static void lazyInit() {
         if (INITIALIZED) {
@@ -176,11 +176,11 @@ public class SimpleLogger extends MarkerIgnoringBase {
     /**
      * The current impl level
      */
-    protected int currentLogLevel = LOG_LEVEL_INFO;
+    protected         int    currentLogLevel = LOG_LEVEL_INFO;
     /**
      * The short name of this simple impl instance
      */
-    private transient String shortLogName = null;
+    private transient String shortLogName    = null;
 
     /**
      * All system properties used by <code>SimpleLogger</code> start with this
@@ -225,9 +225,9 @@ public class SimpleLogger extends MarkerIgnoringBase {
     }
 
     String recursivelyComputeLevelString() {
-        String tempName = name;
-        String levelString = null;
-        int indexOfLastDot = tempName.length();
+        String tempName       = name;
+        String levelString    = null;
+        int    indexOfLastDot = tempName.length();
         while ((levelString == null) && (indexOfLastDot > -1)) {
             tempName = tempName.substring(0, indexOfLastDot);
             levelString = CONFIG_PARAMS.getStringProperty(SimpleLogger.LOG_KEY_PREFIX + tempName, null);
@@ -310,7 +310,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
     }
 
     void write(StringBuilder buf, Throwable t) {
-        if(CONFIG_PARAMS.outputChoice.outputChoiceType == OutputChoice.OutputChoiceType.FILE){
+        if (CONFIG_PARAMS.outputChoice.outputChoiceType == OutputChoice.OutputChoiceType.FILE) {
             System.out.println(buf.toString());
         }
         PrintStream targetStream = CONFIG_PARAMS.outputChoice.getTargetPrintStream();
@@ -323,7 +323,9 @@ public class SimpleLogger extends MarkerIgnoringBase {
     protected void writeThrowable(Throwable t, PrintStream targetStream) {
         if (t != null) {
             t.printStackTrace();
-            t.printStackTrace(targetStream);
+            if (CONFIG_PARAMS.outputChoice.outputChoiceType == OutputChoice.OutputChoiceType.FILE) {
+                t.printStackTrace(targetStream);
+            }
         }
     }
 
@@ -332,10 +334,10 @@ public class SimpleLogger extends MarkerIgnoringBase {
     }
 
     private String computeShortName() {
-        int len = 25;
-        String[] pkgs = name.split("\\.");
+        int          len  = 25;
+        String[]     pkgs = name.split("\\.");
         StringBuffer sbuf = new StringBuffer();
-        int pos = 0;
+        int          pos  = 0;
         for (String pkg : pkgs) {
             if (pos != pkgs.length - 1) {
                 sbuf.append(pkg.charAt(0)).append('.');
@@ -640,8 +642,8 @@ public class SimpleLogger extends MarkerIgnoringBase {
     public static String alignLeft(Object o, int width, char c) {
         if (null == o)
             return null;
-        String s = o.toString();
-        int length = s.length();
+        String s      = o.toString();
+        int    length = s.length();
         if (length >= width)
             return s;
         return new StringBuilder().append(s).append(dup(c, width - length)).toString();
