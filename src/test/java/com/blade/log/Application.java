@@ -13,7 +13,7 @@ public class Application {
     public static void main(String[] args) {
         Blade.me().get("/", ((request, response) -> {
             log.info("Hello World");
-        })).start(Application.class);
+        })).start(Application.class, args);
     }
 
 }
