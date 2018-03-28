@@ -1,6 +1,5 @@
 package com.blade.log;
 
-import com.blade.Blade;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -11,9 +10,19 @@ import lombok.extern.slf4j.Slf4j;
 public class Application {
 
     public static void main(String[] args) {
-        Blade.me().get("/", ((request, response) -> {
-            log.info("Hello World");
-        })).start(Application.class, args);
+        for (int i = 30; i < 106; i++) {
+            if(i > 48 && i < 89){
+                continue;
+            }
+            System.out.println("\033[" + i + "m INFO -> "+ i +" 你好世界 \033[0m");
+            System.out.println("echo -e \"\\033[" + i + "m INFO -> "+ i +" 你好世界 \\033[0m\"");
+        }
+        log.debug("Hello World");
+        log.info("Hello World");
+        log.info("Hello World");
+        log.info("Hello World");
+        log.warn("Hello World");
+        log.error("Hello World");
     }
 
 }

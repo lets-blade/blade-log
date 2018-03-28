@@ -1,16 +1,12 @@
 package org.slf4j.impl;
 
+import org.slf4j.helpers.Util;
+
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
-
-import org.slf4j.helpers.Util;
 
 /**
  * This class holds configuration values for {@link SimpleLogger}. The
@@ -28,38 +24,29 @@ public class SimpleLoggerConfiguration {
 
     private static final String CONFIGURATION_FILE = "app.properties";
 
-    static int DEFAULT_LOG_LEVEL_DEFAULT = SimpleLogger.LOG_LEVEL_INFO;
-    int defaultLogLevel = DEFAULT_LOG_LEVEL_DEFAULT;
+    private static int DEFAULT_LOG_LEVEL_DEFAULT = SimpleLogger.LOG_LEVEL_INFO;
 
-    private static final boolean SHOW_DATE_TIME_DEFAULT = true;
-    boolean showDateTime = SHOW_DATE_TIME_DEFAULT;
+    private static final String DATE_TIME_FORMAT_STR_DEFAULT = "yyyy/MM/dd HH:mm:ss";
 
-    private static final String DATE_TIME_FORMAT_STR_DEFAULT = "yyyy-MM-dd HH:mm:ss:SSS";
-    private static       String dateTimeFormatStr            = DATE_TIME_FORMAT_STR_DEFAULT;
+    private static final boolean SHOW_DATE_TIME_DEFAULT      = true;
+    private static final boolean SHOW_THREAD_NAME_DEFAULT    = true;
+    private static final boolean SHOW_LOG_NAME_DEFAULT       = true;
+    private static final boolean SHOW_SHORT_LOG_NAME_DEFAULT = true;
+    private static final boolean CACHE_OUTPUT_STREAM_DEFAULT = false;
+    private static final boolean LEVEL_IN_BRACKETS_DEFAULT   = false;
 
     DateTimeFormatter dateFormatter = null;
+    OutputChoice      outputChoice  = null;
 
-    private static final boolean SHOW_THREAD_NAME_DEFAULT = true;
-    boolean showThreadName = SHOW_THREAD_NAME_DEFAULT;
-
-    final static boolean SHOW_LOG_NAME_DEFAULT = true;
-    boolean showLogName = SHOW_LOG_NAME_DEFAULT;
-
-    private static final boolean SHOW_SHORT_LOG_NAME_DEFAULT = true;
+    boolean showLogName      = SHOW_LOG_NAME_DEFAULT;
     boolean showShortLogName = SHOW_SHORT_LOG_NAME_DEFAULT;
-
-    private static final boolean LEVEL_IN_BRACKETS_DEFAULT = false;
-    boolean levelInBrackets = LEVEL_IN_BRACKETS_DEFAULT;
+    boolean levelInBrackets  = LEVEL_IN_BRACKETS_DEFAULT;
+    boolean showThreadName   = SHOW_THREAD_NAME_DEFAULT;
+    boolean showDateTime     = SHOW_DATE_TIME_DEFAULT;
+    int     defaultLogLevel  = DEFAULT_LOG_LEVEL_DEFAULT;
 
     private static String LOG_FILE_DEFAULT = "System.out";
     private        String logFile          = LOG_FILE_DEFAULT;
-    OutputChoice outputChoice = null;
-
-    private static final boolean CACHE_OUTPUT_STREAM_DEFAULT = false;
-    private              boolean cacheOutputStream           = CACHE_OUTPUT_STREAM_DEFAULT;
-
-    private static final String WARN_LEVELS_STRING_DEFAULT = "WARN";
-    String warnLevelString = WARN_LEVELS_STRING_DEFAULT;
 
     private final Properties properties = new Properties();
 
@@ -74,13 +61,12 @@ public class SimpleLoggerConfiguration {
         showShortLogName = getBooleanProperty(SimpleLogger.SHOW_SHORT_LOG_NAME_KEY, SHOW_SHORT_LOG_NAME_DEFAULT);
         showDateTime = getBooleanProperty(SimpleLogger.SHOW_DATE_TIME_KEY, SHOW_DATE_TIME_DEFAULT);
         showThreadName = getBooleanProperty(SimpleLogger.SHOW_THREAD_NAME_KEY, SHOW_THREAD_NAME_DEFAULT);
-        dateTimeFormatStr = getStringProperty(SimpleLogger.DATE_TIME_FORMAT_KEY, DATE_TIME_FORMAT_STR_DEFAULT);
+        String dateTimeFormatStr = getStringProperty(SimpleLogger.DATE_TIME_FORMAT_KEY, DATE_TIME_FORMAT_STR_DEFAULT);
         levelInBrackets = getBooleanProperty(SimpleLogger.LEVEL_IN_BRACKETS_KEY, LEVEL_IN_BRACKETS_DEFAULT);
-        warnLevelString = getStringProperty(SimpleLogger.WARN_LEVEL_STRING_KEY, WARN_LEVELS_STRING_DEFAULT);
 
         logFile = getStringProperty(SimpleLogger.LOG_FILE_KEY, logFile);
 
-        cacheOutputStream = getBooleanProperty(SimpleLogger.CACHE_OUTPUT_STREAM_STRING_KEY, CACHE_OUTPUT_STREAM_DEFAULT);
+        boolean cacheOutputStream = getBooleanProperty(SimpleLogger.CACHE_OUTPUT_STREAM_STRING_KEY, CACHE_OUTPUT_STREAM_DEFAULT);
         outputChoice = computeOutputChoice(logFile, cacheOutputStream);
 
         if (dateTimeFormatStr != null) {
@@ -122,17 +108,17 @@ public class SimpleLoggerConfiguration {
         return (prop == null) ? defaultValue : prop;
     }
 
-    boolean getBooleanProperty(String name, boolean defaultValue) {
+    private boolean getBooleanProperty(String name, boolean defaultValue) {
         String prop = getStringProperty(name);
         return (prop == null) ? defaultValue : "true".equalsIgnoreCase(prop);
     }
 
-    String getStringProperty(String name) {
+    private String getStringProperty(String name) {
         String prop = null;
         try {
             prop = System.getProperty(name);
         } catch (SecurityException e) {
-            ; // Ignore
+            // Ignore
         }
         return (prop == null) ? properties.getProperty(name) : prop;
     }

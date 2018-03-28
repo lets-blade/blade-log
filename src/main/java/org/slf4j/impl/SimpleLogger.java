@@ -253,13 +253,8 @@ public class SimpleLogger extends MarkerIgnoringBase {
 
         // Append date-time if so configured
         if (CONFIG_PARAMS.showDateTime) {
-            if (CONFIG_PARAMS.dateFormatter != null) {
-                buf.append(getFormattedDate());
-                buf.append(' ');
-            } else {
-                buf.append(System.currentTimeMillis() - START_TIME);
-                buf.append(' ');
-            }
+            String datetime = getFormattedDate() + ' ';
+            ColorUtils.gray(buf, datetime);
         }
 
         if (CONFIG_PARAMS.levelInBrackets)
@@ -267,21 +262,24 @@ public class SimpleLogger extends MarkerIgnoringBase {
 
         // Append a readable representation of the impl level
         String levelStr = renderLevel(level);
-        buf.append(levelStr).append(" -");
+        buf.append(levelStr);
+
         if (CONFIG_PARAMS.levelInBrackets)
             buf.append(" ]");
         buf.append(' ');
 
         // Append current thread name if so configured
         if (CONFIG_PARAMS.showThreadName) {
-            buf.append("[ ").append(Thread.currentThread().getName()).append(" ] ");
+            ColorUtils.gray(buf, "[ " + Thread.currentThread().getName() + " ] ");
         }
 
         // Append the name of the impl instance if so configured
         if (CONFIG_PARAMS.showShortLogName) {
             if (shortLogName == null)
                 shortLogName = computeShortName();
-            buf.append(String.valueOf(shortLogName)).append(" | ");
+
+            ColorUtils.blue(buf, shortLogName);
+            buf.append(" : ");
         } else if (CONFIG_PARAMS.showLogName) {
             buf.append(String.valueOf(name)).append(" | ");
         }
@@ -296,15 +294,15 @@ public class SimpleLogger extends MarkerIgnoringBase {
     protected String renderLevel(int level) {
         switch (level) {
             case LOG_LEVEL_TRACE:
-                return "TRACE";
+                return ColorUtils.gray("TRACE");
             case LOG_LEVEL_DEBUG:
-                return ("DEBUG");
+                return ColorUtils.gray("DEBUG");
             case LOG_LEVEL_INFO:
-                return "INFO";
+                return ColorUtils.green("INFO ");
             case LOG_LEVEL_WARN:
-                return CONFIG_PARAMS.warnLevelString;
+                return ColorUtils.yellow("WARN ");
             case LOG_LEVEL_ERROR:
-                return "ERROR";
+                return ColorUtils.red("ERROR");
         }
         throw new IllegalStateException("Unrecognized level [" + level + "]");
     }
