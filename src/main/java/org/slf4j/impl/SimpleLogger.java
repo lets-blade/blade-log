@@ -33,6 +33,8 @@ import org.slf4j.spi.LocationAwareLogger;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 
+import static org.slf4j.impl.ColorUtils.padLeft;
+
 /**
  * <p>
  * Simple implementation of {@link Logger} that sends all enabled impl messages,
@@ -192,8 +194,6 @@ public class SimpleLogger extends MarkerIgnoringBase {
 
     public static final String CACHE_OUTPUT_STREAM_STRING_KEY = SimpleLogger.SYSTEM_PREFIX + "cacheOutputStream";
 
-    public static final String WARN_LEVEL_STRING_KEY = SimpleLogger.SYSTEM_PREFIX + "warnLevelString";
-
     public static final String LEVEL_IN_BRACKETS_KEY = SimpleLogger.SYSTEM_PREFIX + "levelInBrackets";
 
     public static final String LOG_FILE_KEY = SimpleLogger.SYSTEM_PREFIX + "logFile";
@@ -270,16 +270,16 @@ public class SimpleLogger extends MarkerIgnoringBase {
 
         // Append current thread name if so configured
         if (CONFIG_PARAMS.showThreadName) {
-            ColorUtils.gray(buf, "[ " + Thread.currentThread().getName() + " ] ");
+            String threadName = padLeft(Thread.currentThread().getName(), 17);
+            ColorUtils.gray(buf, "[ " + threadName + " ] ");
         }
 
         // Append the name of the impl instance if so configured
         if (CONFIG_PARAMS.showShortLogName) {
-            if (shortLogName == null)
+            if (shortLogName == null) {
                 shortLogName = computeShortName();
-
-            ColorUtils.blue(buf, shortLogName);
-            buf.append(" : ");
+            }
+            ColorUtils.blue(buf, shortLogName + " : ");
         } else if (CONFIG_PARAMS.showLogName) {
             buf.append(String.valueOf(name)).append(" | ");
         }
@@ -332,19 +332,19 @@ public class SimpleLogger extends MarkerIgnoringBase {
     }
 
     private String computeShortName() {
-        int          len  = 25;
-        String[]     pkgs = name.split("\\.");
-        StringBuffer sbuf = new StringBuffer();
-        int          pos  = 0;
-        for (String pkg : pkgs) {
-            if (pos != pkgs.length - 1) {
-                sbuf.append(pkg.charAt(0)).append('.');
+        int           len       = 30;
+        String[]      pkges     = name.split("\\.");
+        StringBuilder shortName = new StringBuilder();
+        int           pos       = 0;
+        for (String pkg : pkges) {
+            if (pos != pkges.length - 1) {
+                shortName.append(pkg.charAt(0)).append('.');
             } else {
-                sbuf.append(pkg);
+                shortName.append(pkg);
             }
             pos++;
         }
-        return alignLeft(sbuf.toString(), len, ' ');
+        return padLeft(shortName.toString(), len);
     }
 
     /**
