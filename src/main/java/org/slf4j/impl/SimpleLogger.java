@@ -28,12 +28,13 @@ import org.slf4j.event.LoggingEvent;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MarkerIgnoringBase;
 import org.slf4j.helpers.MessageFormatter;
+import org.slf4j.impl.utils.ColorUtils;
 import org.slf4j.spi.LocationAwareLogger;
 
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 
-import static org.slf4j.impl.ColorUtils.padLeft;
+import static org.slf4j.impl.utils.ColorUtils.padLeft;
 
 /**
  * <p>
@@ -145,8 +146,6 @@ public class SimpleLogger extends MarkerIgnoringBase {
 
     private static final long serialVersionUID = -632788891211436180L;
 
-    private static long START_TIME = System.currentTimeMillis();
-
     protected static final int LOG_LEVEL_TRACE = LocationAwareLogger.TRACE_INT;
     protected static final int LOG_LEVEL_DEBUG = LocationAwareLogger.DEBUG_INT;
     protected static final int LOG_LEVEL_INFO  = LocationAwareLogger.INFO_INT;
@@ -158,7 +157,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
     protected static final int LOG_LEVEL_OFF   = LOG_LEVEL_ERROR + 10;
 
     private static boolean                   INITIALIZED   = false;
-    static         SimpleLoggerConfiguration CONFIG_PARAMS = null;
+    private static SimpleLoggerConfiguration CONFIG_PARAMS = null;
 
     static void lazyInit() {
         if (INITIALIZED) {
@@ -185,32 +184,6 @@ public class SimpleLogger extends MarkerIgnoringBase {
     private transient String shortLogName    = null;
 
     /**
-     * All system properties used by <code>SimpleLogger</code> start with this
-     * prefix
-     */
-    public static final String SYSTEM_PREFIX = "com.blade.logger.";
-
-    public static final String LOG_KEY_PREFIX = SimpleLogger.SYSTEM_PREFIX;
-
-    public static final String CACHE_OUTPUT_STREAM_STRING_KEY = SimpleLogger.SYSTEM_PREFIX + "cacheOutputStream";
-
-    public static final String LEVEL_IN_BRACKETS_KEY = SimpleLogger.SYSTEM_PREFIX + "levelInBrackets";
-
-    public static final String LOG_FILE_KEY = SimpleLogger.SYSTEM_PREFIX + "logFile";
-
-    public static final String SHOW_SHORT_LOG_NAME_KEY = SimpleLogger.SYSTEM_PREFIX + "showShortLogName";
-
-    public static final String SHOW_LOG_NAME_KEY = SimpleLogger.SYSTEM_PREFIX + "showLogName";
-
-    public static final String SHOW_THREAD_NAME_KEY = SimpleLogger.SYSTEM_PREFIX + "showThreadName";
-
-    public static final String DATE_TIME_FORMAT_KEY = SimpleLogger.SYSTEM_PREFIX + "dateTimeFormat";
-
-    public static final String SHOW_DATE_TIME_KEY = SimpleLogger.SYSTEM_PREFIX + "showDateTime";
-
-    public static final String DEFAULT_LOG_LEVEL_KEY = SimpleLogger.SYSTEM_PREFIX + "defaultLogLevel";
-
-    /**
      * Package access allows only {@link SimpleLoggerFactory} to instantiate
      * SimpleLogger instances.
      */
@@ -224,13 +197,13 @@ public class SimpleLogger extends MarkerIgnoringBase {
         }
     }
 
-    String recursivelyComputeLevelString() {
+    private String recursivelyComputeLevelString() {
         String tempName       = name;
         String levelString    = null;
         int    indexOfLastDot = tempName.length();
         while ((levelString == null) && (indexOfLastDot > -1)) {
             tempName = tempName.substring(0, indexOfLastDot);
-            levelString = CONFIG_PARAMS.getStringProperty(SimpleLogger.LOG_KEY_PREFIX + tempName, null);
+            levelString = CONFIG_PARAMS.getStringProp(Constant.LOG_KEY_PREFIX + tempName, null);
             indexOfLastDot = String.valueOf(tempName).lastIndexOf(".");
         }
         return levelString;
@@ -288,37 +261,39 @@ public class SimpleLogger extends MarkerIgnoringBase {
         buf.append(message);
 
         write(buf, t);
-
     }
 
-    protected String renderLevel(int level) {
+    private String renderLevel(int level) {
         switch (level) {
             case LOG_LEVEL_TRACE:
                 return ColorUtils.gray("TRACE");
             case LOG_LEVEL_DEBUG:
                 return ColorUtils.gray("DEBUG");
             case LOG_LEVEL_INFO:
-                return ColorUtils.green("INFO ");
+                return ColorUtils.green(" INFO");
             case LOG_LEVEL_WARN:
-                return ColorUtils.yellow("WARN ");
+                return ColorUtils.yellow(" WARN");
             case LOG_LEVEL_ERROR:
                 return ColorUtils.red("ERROR");
         }
         throw new IllegalStateException("Unrecognized level [" + level + "]");
     }
 
-    void write(StringBuilder buf, Throwable t) {
+    private void write(StringBuilder buf, Throwable t) {
         if (CONFIG_PARAMS.outputChoice.outputChoiceType == OutputChoice.OutputChoiceType.FILE) {
             System.out.println(buf.toString());
-        }
-        PrintStream targetStream = CONFIG_PARAMS.outputChoice.getTargetPrintStream();
+            // 写入缓冲队列
+            CONFIG_PARAMS.writerTask.addToQueue(CONFIG_PARAMS.logName, buf);
+        } else {
+            PrintStream targetStream = CONFIG_PARAMS.outputChoice.getTargetPrintStream();
 
-        targetStream.println(buf.toString());
-        writeThrowable(t, targetStream);
-        targetStream.flush();
+            targetStream.println(buf.toString());
+            writeThrowable(t, targetStream);
+            targetStream.flush();
+        }
     }
 
-    protected void writeThrowable(Throwable t, PrintStream targetStream) {
+    private void writeThrowable(Throwable t, PrintStream targetStream) {
         if (t != null) {
             t.printStackTrace();
             if (CONFIG_PARAMS.outputChoice.outputChoiceType == OutputChoice.OutputChoiceType.FILE) {
@@ -332,12 +307,12 @@ public class SimpleLogger extends MarkerIgnoringBase {
     }
 
     private String computeShortName() {
-        int           len       = 30;
-        String[]      pkges     = name.split("\\.");
-        StringBuilder shortName = new StringBuilder();
-        int           pos       = 0;
-        for (String pkg : pkges) {
-            if (pos != pkges.length - 1) {
+        int           len          = 30;
+        String[]      packageNames = name.split("\\.");
+        StringBuilder shortName    = new StringBuilder();
+        int           pos          = 0;
+        for (String pkg : packageNames) {
+            if (pos != packageNames.length - 1) {
                 shortName.append(pkg.charAt(0)).append('.');
             } else {
                 shortName.append(pkg);
@@ -383,7 +358,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      *
      * @param logLevel is this level enabled?
      */
-    protected boolean isLevelEnabled(int logLevel) {
+    private boolean isLevelEnabled(int logLevel) {
         // impl level are numerically ordered so can use simple numeric
         // comparison
         return (logLevel >= currentLogLevel);
@@ -627,40 +602,6 @@ public class SimpleLogger extends MarkerIgnoringBase {
         }
         FormattingTuple tp = MessageFormatter.arrayFormat(event.getMessage(), event.getArgumentArray(), event.getThrowable());
         log(levelInt, tp.getMessage(), event.getThrowable());
-    }
-
-    /**
-     * 在字符串右侧填充一定数量的特殊字符
-     *
-     * @param o     可被 toString 的对象
-     * @param width 字符数量
-     * @param c     字符
-     * @return 新字符串
-     */
-    public static String alignLeft(Object o, int width, char c) {
-        if (null == o)
-            return null;
-        String s      = o.toString();
-        int    length = s.length();
-        if (length >= width)
-            return s;
-        return new StringBuilder().append(s).append(dup(c, width - length)).toString();
-    }
-
-    /**
-     * 复制字符
-     *
-     * @param c   字符
-     * @param num 数量
-     * @return 新字符串
-     */
-    public static String dup(char c, int num) {
-        if (c == 0 || num < 1)
-            return "";
-        StringBuilder sb = new StringBuilder(num);
-        for (int i = 0; i < num; i++)
-            sb.append(c);
-        return sb.toString();
     }
 
 }

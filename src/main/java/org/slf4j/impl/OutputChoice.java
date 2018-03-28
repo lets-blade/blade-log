@@ -17,9 +17,6 @@ class OutputChoice {
     final PrintStream targetPrintStream;
 
     OutputChoice(OutputChoiceType outputChoiceType) {
-        if (outputChoiceType == OutputChoiceType.FILE) {
-            throw new IllegalArgumentException();
-        }
         this.outputChoiceType = outputChoiceType;
         if (outputChoiceType == OutputChoiceType.CACHED_SYS_OUT) {
             this.targetPrintStream = System.out;
@@ -28,11 +25,6 @@ class OutputChoice {
         } else {
             this.targetPrintStream = null;
         }
-    }
-
-    OutputChoice(PrintStream printStream) {
-        this.outputChoiceType = OutputChoiceType.FILE;
-        this.targetPrintStream = printStream;
     }
 
     PrintStream getTargetPrintStream() {

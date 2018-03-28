@@ -2,7 +2,8 @@ package org.slf4j.impl;
 
 import org.slf4j.helpers.Util;
 
-import java.io.*;
+import java.io.File;
+import java.io.InputStream;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.time.format.DateTimeFormatter;
@@ -37,27 +38,51 @@ public class SimpleLoggerConfiguration {
     boolean showDateTime     = true;
     int     defaultLogLevel  = SimpleLogger.LOG_LEVEL_INFO;
 
+    private String logPath = "./logs";
+    String logName = "System.out";
 
-    private String logFile = "System.out";
+    WriterTask writerTask;
 
     void init() {
         loadProperties();
 
-        String defaultLogLevelString = getStringProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, null);
+        String defaultLogLevelString = getStringProp(Constant.ROOT_LEVEL_KEY, null);
         if (defaultLogLevelString != null)
             defaultLogLevel = stringToLevel(defaultLogLevelString);
 
-        showLogName = getBooleanProperty(SimpleLogger.SHOW_LOG_NAME_KEY, showLogName);
-        showShortLogName = getBooleanProperty(SimpleLogger.SHOW_SHORT_LOG_NAME_KEY, showShortLogName);
-        showDateTime = getBooleanProperty(SimpleLogger.SHOW_DATE_TIME_KEY, showDateTime);
-        showThreadName = getBooleanProperty(SimpleLogger.SHOW_THREAD_NAME_KEY, showThreadName);
-        String dateTimeFormatStr = getStringProperty(SimpleLogger.DATE_TIME_FORMAT_KEY, DATE_TIME_FORMAT_STR_DEFAULT);
-        levelInBrackets = getBooleanProperty(SimpleLogger.LEVEL_IN_BRACKETS_KEY, levelInBrackets);
+        showLogName = getBoolProp(Constant.SHOW_LOG_NAME_KEY, showLogName);
+        showShortLogName = getBoolProp(Constant.SHOW_SHORT_NAME_KEY, showShortLogName);
+        showDateTime = getBoolProp(Constant.SHOW_DATE_TIME_KEY, showDateTime);
+        showThreadName = getBoolProp(Constant.SHOW_THREAD_NAME_KEY, showThreadName);
+        String dateTimeFormatStr = getStringProp(Constant.DATE_TIME_FORMAT_KEY, DATE_TIME_FORMAT_STR_DEFAULT);
+        levelInBrackets = getBoolProp(Constant.LEVEL_IN_BRACKETS_KEY, levelInBrackets);
+        boolean cacheOutputStream = getBoolProp(Constant.CACHE_OUTPUT_STREAM_STRING_KEY, false);
 
-        logFile = getStringProperty(SimpleLogger.LOG_FILE_KEY, logFile);
+        logName = getStringProp(Constant.LOG_NAME_KEY, logName);
 
-        boolean cacheOutputStream = getBooleanProperty(SimpleLogger.CACHE_OUTPUT_STREAM_STRING_KEY, false);
-        outputChoice = computeOutputChoice(logFile, cacheOutputStream);
+        if (!"System.out".equals(logName)) {
+            logPath = getStringProp(Constant.LOG_PATH_KEY, logPath);
+            // 100MB
+            long maxSize = getLongProp(Constant.MAX_SIZE_KEY, 1024 * 1024 * 100);
+            // 10KB
+            long cacheSize = getLongProp(Constant.CACHE_SIZE_KEY, 1024 * 10);
+            // 1000ms
+            long writeInterval = getLongProp(Constant.WRITE_INTERVAL_KEY, 1000);
+
+            String logFilePath = logPath + File.separator + logName;
+            outputChoice = computeOutputChoice(logFilePath, cacheOutputStream);
+            writerTask = new WriterTask(logPath, maxSize, cacheSize, writeInterval);
+
+            Thread thread = new Thread(writerTask);
+            thread.setName("blade-logging");
+            thread.setDaemon(true);
+            thread.start();
+
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> writerTask.close()));
+
+        } else {
+            outputChoice = computeOutputChoice(logName, cacheOutputStream);
+        }
 
         if (dateTimeFormatStr != null) {
             try {
@@ -93,17 +118,25 @@ public class SimpleLoggerConfiguration {
         }
     }
 
-    String getStringProperty(String name, String defaultValue) {
-        String prop = getStringProperty(name);
+    private Long getLongProp(String name, long defaultValue) {
+        String val = getStringProp(name);
+        if (null == val || val.isEmpty()) {
+            return defaultValue;
+        }
+        return Long.parseLong(val);
+    }
+
+    String getStringProp(String name, String defaultValue) {
+        String prop = getStringProp(name);
         return (prop == null) ? defaultValue : prop;
     }
 
-    private boolean getBooleanProperty(String name, boolean defaultValue) {
-        String prop = getStringProperty(name);
+    private boolean getBoolProp(String name, boolean defaultValue) {
+        String prop = getStringProp(name);
         return (prop == null) ? defaultValue : "true".equalsIgnoreCase(prop);
     }
 
-    private String getStringProperty(String name) {
+    private String getStringProp(String name) {
         String prop = null;
         try {
             prop = System.getProperty(name);
@@ -131,29 +164,19 @@ public class SimpleLoggerConfiguration {
         return SimpleLogger.LOG_LEVEL_INFO;
     }
 
-    private static OutputChoice computeOutputChoice(String logFile, boolean cacheOutputStream) {
-        if ("System.err".equalsIgnoreCase(logFile))
+    private static OutputChoice computeOutputChoice(String logFilePath, boolean cacheOutputStream) {
+        if ("System.err".equalsIgnoreCase(logFilePath))
             if (cacheOutputStream)
                 return new OutputChoice(OutputChoice.OutputChoiceType.CACHED_SYS_ERR);
             else
                 return new OutputChoice(OutputChoice.OutputChoiceType.SYS_ERR);
-        else if ("System.out".equalsIgnoreCase(logFile)) {
+        else if ("System.out".equalsIgnoreCase(logFilePath)) {
             if (cacheOutputStream)
                 return new OutputChoice(OutputChoice.OutputChoiceType.CACHED_SYS_OUT);
             else
                 return new OutputChoice(OutputChoice.OutputChoiceType.SYS_OUT);
         } else {
-            try {
-                if (!new File(logFile).getParentFile().exists()) {
-                    new File(logFile).getParentFile().mkdirs();
-                }
-                FileOutputStream fos         = new FileOutputStream(logFile);
-                PrintStream      printStream = new PrintStream(fos);
-                return new OutputChoice(printStream);
-            } catch (FileNotFoundException e) {
-                Util.report("Could not open [" + logFile + "]. Defaulting to System.err", e);
-                return new OutputChoice(OutputChoice.OutputChoiceType.SYS_ERR);
-            }
+            return new OutputChoice(OutputChoice.OutputChoiceType.FILE);
         }
     }
 
