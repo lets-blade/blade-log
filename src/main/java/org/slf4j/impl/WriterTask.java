@@ -1,6 +1,6 @@
 package org.slf4j.impl;
 
-import org.slf4j.impl.utils.StringUtils;
+import org.slf4j.impl.utils.LogUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -10,7 +10,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Write log task
@@ -20,16 +21,19 @@ import java.util.concurrent.TimeUnit;
  */
 public class WriterTask implements Runnable {
 
-    private boolean isRunning = true;
+    private boolean isRunning      = true;
+    private Lock    lock           = new ReentrantLock();
+    private Lock    singleFileLock = new ReentrantLock();
 
     private Map<String, SimpleLoggerItem> logItemMap = new ConcurrentHashMap<>(8);
-    private String logDir;
+
+    private final String logDir;
     // 100MB
-    private long   maxSize;
+    private final long   maxSize;
     // 10KB
-    private long   cacheSize;
+    private final long   cacheSize;
     // 1000ms
-    private long   writeInterval;
+    private final long   writeInterval;
 
     public WriterTask(String logDir, long maxSize, long cacheSize, long writeInterval) {
         this.logDir = logDir;
@@ -44,7 +48,6 @@ public class WriterTask implements Runnable {
             try {
                 // write to file
                 flush(false);
-                TimeUnit.MILLISECONDS.sleep(200);
             } catch (Exception e) {
                 System.err.println("Start logging error...");
                 e.printStackTrace();
@@ -64,7 +67,8 @@ public class WriterTask implements Runnable {
         logMsg = new StringBuilder(newMsg).append("\r\n");
         SimpleLoggerItem lfi = logItemMap.get(logFileName);
         if (lfi == null) {
-            synchronized (this) {
+            lock.lock();
+            try {
                 lfi = logItemMap.get(logFileName);
                 if (lfi == null) {
                     lfi = new SimpleLoggerItem();
@@ -72,16 +76,21 @@ public class WriterTask implements Runnable {
                     lfi.nextWriteTime = System.currentTimeMillis() + writeInterval;
                     logItemMap.put(logFileName, lfi);
                 }
+            } finally {
+                lock.unlock();
             }
         }
         // synchronize the log of a single file
-        synchronized (lfi) {
+        singleFileLock.lock();
+        try {
             if (lfi.currLogBuff == 'A') {
                 lfi.alLogBufA.add(logMsg);
             } else {
                 lfi.alLogBufB.add(logMsg);
             }
-            lfi.cacheSize += Objects.requireNonNull(StringUtils.toBytes(logMsg.toString())).length;
+            lfi.cacheSize += Objects.requireNonNull(LogUtils.toBytes(logMsg.toString())).length;
+        } finally {
+            singleFileLock.unlock();
         }
     }
 
@@ -98,28 +107,37 @@ public class WriterTask implements Runnable {
     private void flush(boolean bIsForce) throws IOException {
         long currTime = System.currentTimeMillis();
         for (String s : logItemMap.keySet()) {
-            SimpleLoggerItem lfi = logItemMap.get(s);
-            if (currTime >= lfi.nextWriteTime || cacheSize <= lfi.cacheSize || bIsForce) {
-                ArrayList<StringBuilder> alWrtLog = null;
-                synchronized (this) {
-                    if (lfi.currLogBuff == 'A') {
-                        alWrtLog = lfi.alLogBufA;
-                        lfi.currLogBuff = 'B';
-                    } else {
-                        alWrtLog = lfi.alLogBufB;
-                        lfi.currLogBuff = 'A';
-                    }
-                    lfi.cacheSize = 0;
-                }
-                this.createLogFile(lfi);
-                int iWriteSize = writeToFile(lfi.logPath, alWrtLog);
-                lfi.size += iWriteSize;
+            SimpleLoggerItem loggerItem = logItemMap.get(s);
+            if (currTime >= loggerItem.nextWriteTime || cacheSize <= loggerItem.cacheSize || bIsForce) {
+                this.flushLogger(loggerItem);
+            } else {
+                LogUtils.sleep(10);
             }
         }
     }
 
+    private void flushLogger(SimpleLoggerItem loggerItem) throws IOException {
+        lock.lock();
+        ArrayList<StringBuilder> alWrtLog;
+        try {
+            if (loggerItem.currLogBuff == 'A') {
+                alWrtLog = loggerItem.alLogBufA;
+                loggerItem.currLogBuff = 'B';
+            } else {
+                alWrtLog = loggerItem.alLogBufB;
+                loggerItem.currLogBuff = 'A';
+            }
+            loggerItem.cacheSize = 0;
+        } finally {
+            lock.unlock();
+        }
+        this.createLogFile(loggerItem);
+        int iWriteSize = writeToFile(loggerItem.logPath, alWrtLog);
+        loggerItem.size += iWriteSize;
+    }
+
     private void createLogFile(SimpleLoggerItem loggerItem) {
-        String currPCDate = StringUtils.getNormalDate();
+        String currPCDate = LogUtils.getNormalDate();
         // Determine if the log root path exists. If it does not exist, create it first
         File rootDir = new File(logDir);
         if (!rootDir.exists() || !rootDir.isDirectory()) {
@@ -127,7 +145,7 @@ public class WriterTask implements Runnable {
         }
 
         // Cut by day
-        if (!StringUtils.isEmpty(loggerItem.logPath) && !loggerItem.lastWriteDate.equals(currPCDate)) {
+        if (!LogUtils.isEmpty(loggerItem.logPath) && !loggerItem.lastWriteDate.equals(currPCDate)) {
 
             String  yesterday = loggerItem.logFileName + "_" + loggerItem.lastWriteDate + ".log";
             boolean renamed   = new File(loggerItem.logPath).renameTo(new File(rootDir, yesterday));
@@ -138,10 +156,10 @@ public class WriterTask implements Runnable {
         }
 
         // if you exceed a single file size, split the file
-        if (StringUtils.isNotEmpty(loggerItem.logPath) && loggerItem.size >= maxSize) {
+        if (LogUtils.isNotEmpty(loggerItem.logPath) && loggerItem.size >= maxSize) {
             File oldFile = new File(loggerItem.logPath);
             if (oldFile.exists()) {
-                String  newFileName = logDir + "/" + loggerItem.lastWriteDate + "/" + loggerItem.logFileName + "_" + StringUtils.getDate() + "_" + StringUtils.getTime() + ".log";
+                String  newFileName = logDir + "/" + loggerItem.lastWriteDate + "/" + loggerItem.logFileName + "_" + LogUtils.getDate() + "_" + LogUtils.getTime() + ".log";
                 File    newFile     = new File(newFileName);
                 boolean flag        = oldFile.renameTo(newFile);
                 if (!flag) {
@@ -153,7 +171,7 @@ public class WriterTask implements Runnable {
         }
 
         // create log file
-        if (StringUtils.isEmpty(loggerItem.logPath) || !loggerItem.lastWriteDate.equals(currPCDate)) {
+        if (LogUtils.isEmpty(loggerItem.logPath) || !loggerItem.lastWriteDate.equals(currPCDate)) {
             String sDir = logDir;
             File   file = new File(sDir);
             if (!file.exists()) {
@@ -178,7 +196,7 @@ public class WriterTask implements Runnable {
             fout = new FileOutputStream(sFullFileName, true);
             for (int i = 0; i < sbLogMsg.size(); i++) {
                 StringBuilder logMsg   = sbLogMsg.get(i);
-                byte[]        tmpBytes = StringUtils.toBytes(logMsg.toString());
+                byte[]        tmpBytes = LogUtils.toBytes(logMsg.toString());
                 fout.write(tmpBytes);
                 size += tmpBytes.length;
             }

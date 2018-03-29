@@ -3,12 +3,13 @@ package org.slf4j.impl.utils;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author biezhi
  * @date 2018/3/29
  */
-public class StringUtils {
+public class LogUtils {
 
     private static final DateTimeFormatter d1 = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final DateTimeFormatter d2 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -45,6 +46,14 @@ public class StringUtils {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static void sleep(long ms){
+        try {
+            TimeUnit.MILLISECONDS.sleep(ms);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 }
