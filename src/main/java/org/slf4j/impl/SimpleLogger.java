@@ -35,7 +35,7 @@ import org.slf4j.spi.LocationAwareLogger;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 
-import static org.slf4j.impl.utils.ColorUtils.padLeft;
+import static org.slf4j.impl.Constant.LOG_DESC_MAP;
 
 /**
  * <p>
@@ -181,11 +181,11 @@ public class SimpleLogger extends MarkerIgnoringBase {
     /**
      * The current impl level
      */
-    protected         int    currentLogLevel = LOG_LEVEL_INFO;
+    protected         int    rootLevel;
     /**
      * The short name of this simple impl instance
      */
-    private transient String shortLogName    = null;
+    private transient String shortLogName = null;
 
     /**
      * Package access allows only {@link SimpleLoggerFactory} to instantiate
@@ -195,9 +195,9 @@ public class SimpleLogger extends MarkerIgnoringBase {
         this.name = name;
         String levelString = recursivelyComputeLevelString();
         if (levelString != null) {
-            this.currentLogLevel = SimpleLoggerConfiguration.stringToLevel(levelString);
+            this.rootLevel = SimpleLoggerConfiguration.stringToLevel(levelString);
         } else {
-            this.currentLogLevel = CONFIG_PARAMS.defaultLogLevel;
+            this.rootLevel = CONFIG_PARAMS.defaultLogLevel;
         }
     }
 
@@ -226,7 +226,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
             return;
         }
 
-        StringBuilder buf = new StringBuilder(32);
+        StringBuffer buf = new StringBuffer(message.length() + 110);
 
         // Append date-time if so configured
         if (CONFIG_PARAMS.showDateTime) {
@@ -239,8 +239,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
         }
 
         // Append a readable representation of the impl level
-        String levelStr = renderLevel(level);
-        buf.append(levelStr);
+        buf.append(LOG_DESC_MAP.get(level));
 
         if (CONFIG_PARAMS.levelInBrackets) {
             buf.append(" ]");
@@ -249,16 +248,16 @@ public class SimpleLogger extends MarkerIgnoringBase {
 
         // Append current thread name if so configured
         if (CONFIG_PARAMS.showThreadName) {
-            String threadName = padLeft(Thread.currentThread().getName(), 17);
-            ColorUtils.gray(buf, "[ " + threadName + " ] ");
+            String threadName = LogUtils.getThreadPadding();
+            buf.append(threadName);
         }
 
         // Append the name of the impl instance if so configured
         if (CONFIG_PARAMS.showShortLogName) {
             if (shortLogName == null) {
-                shortLogName = computeShortName();
+                shortLogName = LogUtils.getShortName(name);
             }
-            ColorUtils.blue(buf, shortLogName + " : ");
+            buf.append(shortLogName);
         } else if (CONFIG_PARAMS.showLogName) {
             buf.append(String.valueOf(name)).append(" | ");
         }
@@ -269,33 +268,17 @@ public class SimpleLogger extends MarkerIgnoringBase {
         write(buf, t);
     }
 
-    private String renderLevel(int level) {
-        switch (level) {
-            case LOG_LEVEL_TRACE:
-                return ColorUtils.gray("TRACE");
-            case LOG_LEVEL_DEBUG:
-                return ColorUtils.gray("DEBUG");
-            case LOG_LEVEL_INFO:
-                return ColorUtils.green(" INFO");
-            case LOG_LEVEL_WARN:
-                return ColorUtils.yellow(" WARN");
-            case LOG_LEVEL_ERROR:
-                return ColorUtils.red("ERROR");
-            default:
-                throw new IllegalStateException("Unrecognized level [" + level + "]");
-        }
-    }
-
-    private void write(StringBuilder buf, Throwable t) {
+    private void write(StringBuffer buf, Throwable t) {
         if (CONFIG_PARAMS.outputChoice.outputChoiceType == OutputChoice.OutputChoiceType.FILE) {
-            if (null != t) {
-                String stack = " " + LogUtils.stackTraceToString(t);
-                buf.append(stack);
-                System.err.println(buf.toString());
-            } else{
-                System.out.println(buf.toString());
+            if (CONFIG_PARAMS.showConsole) {
+                if (null != t) {
+                    String stack = " " + LogUtils.stackTraceToString(t);
+                    buf.append(stack);
+                    System.err.println(buf.toString());
+                } else {
+                    System.out.println(buf.toString());
+                }
             }
-            // 写入缓冲队列
             CONFIG_PARAMS.writerTask.addToQueue(CONFIG_PARAMS.logName, buf);
         } else {
             PrintStream targetStream = CONFIG_PARAMS.outputChoice.getTargetPrintStream();
@@ -317,22 +300,6 @@ public class SimpleLogger extends MarkerIgnoringBase {
 
     private String getFormattedDate() {
         return LocalDateTime.now().format(CONFIG_PARAMS.dateFormatter);
-    }
-
-    private String computeShortName() {
-        int           len          = 31;
-        String[]      packageNames = name.split("\\.");
-        StringBuilder shortName    = new StringBuilder();
-        int           pos          = 0;
-        for (String pkg : packageNames) {
-            if (pos != packageNames.length - 1) {
-                shortName.append(pkg.charAt(0)).append('.');
-            } else {
-                shortName.append(pkg);
-            }
-            pos++;
-        }
-        return padLeft(shortName.toString(), len);
     }
 
     /**
@@ -374,7 +341,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
     private boolean isLevelEnabled(int logLevel) {
         // impl level are numerically ordered so can use simple numeric
         // comparison
-        return (logLevel >= currentLogLevel);
+        return (logLevel >= rootLevel);
     }
 
     /**

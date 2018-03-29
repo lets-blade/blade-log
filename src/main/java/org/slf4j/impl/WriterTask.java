@@ -61,10 +61,10 @@ public class WriterTask implements Runnable {
      * @param logFileName
      * @param logMsg
      */
-    public void addToQueue(String logFileName, StringBuilder logMsg) {
+    public void addToQueue(String logFileName, StringBuffer logMsg) {
         // remove color code
-        String newMsg = logMsg.toString().replaceAll("\u001B\\[\\d+m", "");
-        logMsg = new StringBuilder(newMsg).append("\r\n");
+//        String newMsg = logMsg.toString().replaceAll("\u001B\\[\\d+m", "");
+        logMsg = new StringBuffer(logMsg.toString().replaceAll("\u001B\\[\\d+m", "")).append("\r\n");
         SimpleLoggerItem lfi = logItemMap.get(logFileName);
         if (lfi == null) {
             lock.lock();
@@ -118,7 +118,7 @@ public class WriterTask implements Runnable {
 
     private void flushLogger(SimpleLoggerItem loggerItem) throws IOException {
         lock.lock();
-        ArrayList<StringBuilder> alWrtLog;
+        ArrayList<StringBuffer> alWrtLog;
         try {
             if (loggerItem.currLogBuff == 'A') {
                 alWrtLog = loggerItem.alLogBufA;
@@ -189,13 +189,13 @@ public class WriterTask implements Runnable {
         }
     }
 
-    private int writeToFile(String sFullFileName, ArrayList<StringBuilder> sbLogMsg) throws IOException {
+    private int writeToFile(String sFullFileName, ArrayList<StringBuffer> sbLogMsg) throws IOException {
         int          size = 0;
         OutputStream fout = null;
         try {
             fout = new FileOutputStream(sFullFileName, true);
             for (int i = 0; i < sbLogMsg.size(); i++) {
-                StringBuilder logMsg   = sbLogMsg.get(i);
+                StringBuffer logMsg   = sbLogMsg.get(i);
                 byte[]        tmpBytes = LogUtils.toBytes(logMsg.toString());
                 fout.write(tmpBytes);
                 size += tmpBytes.length;

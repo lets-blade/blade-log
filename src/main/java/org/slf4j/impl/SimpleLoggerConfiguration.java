@@ -26,10 +26,7 @@ import static org.slf4j.impl.Constant.*;
  */
 public class SimpleLoggerConfiguration {
 
-    private static final String CONFIGURATION_FILE = "app.properties";
-
-    private static final String     DATE_TIME_FORMAT_STR_DEFAULT = "yyyy/MM/dd HH:mm:ss";
-    private final        Properties properties                   = new Properties();
+    private final Properties properties = new Properties();
 
     DateTimeFormatter dateFormatter = null;
     OutputChoice      outputChoice  = null;
@@ -39,6 +36,7 @@ public class SimpleLoggerConfiguration {
     boolean levelInBrackets  = false;
     boolean showThreadName   = true;
     boolean showDateTime     = true;
+    boolean showConsole      = true;
     int     defaultLogLevel  = SimpleLogger.LOG_LEVEL_INFO;
 
     String logName;
@@ -57,6 +55,7 @@ public class SimpleLoggerConfiguration {
         this.showShortLogName = getBoolProp(Constant.SHOW_SHORT_NAME_KEY, showShortLogName);
         this.showDateTime = getBoolProp(Constant.SHOW_DATE_TIME_KEY, showDateTime);
         this.showThreadName = getBoolProp(Constant.SHOW_THREAD_NAME_KEY, showThreadName);
+        this.showConsole = getBoolProp(Constant.SHOW_CONSOLE_KEY, showConsole);
 
         String dateTimeFormatStr = getStringProp(Constant.DATE_TIME_FORMAT_KEY, DATE_TIME_FORMAT_STR_DEFAULT);
         this.levelInBrackets = getBoolProp(Constant.LEVEL_IN_BRACKETS_KEY, levelInBrackets);

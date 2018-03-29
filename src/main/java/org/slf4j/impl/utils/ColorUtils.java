@@ -1,5 +1,7 @@
 package org.slf4j.impl.utils;
 
+import static org.slf4j.impl.utils.LogUtils.isWindows;
+
 /**
  * Log color utils
  *
@@ -28,10 +30,6 @@ public final class ColorUtils {
     private static final String ANSI_CYAN_BACKGROUND   = "\u001B[46m";
     private static final String ANSI_WHITE_BACKGROUND  = "\u001B[47m";
 
-    public static boolean isWindows() {
-        return System.getProperties().getProperty("os.name").toLowerCase().contains("win");
-    }
-
     public static String green(String str) {
         if (isWindows()) return str;
         return ANSI_GREEN + str + ANSI_RESET;
@@ -52,7 +50,12 @@ public final class ColorUtils {
         return ANSI_WHITE + str + ANSI_RESET;
     }
 
-    public static void blue(StringBuilder buf, String str) {
+    public static String blue(String str) {
+        if (isWindows()) return str;
+        return ANSI_BLUE2 + str + ANSI_RESET;
+    }
+
+    public static void blue(StringBuffer buf, String str) {
         if (isWindows()) {
             buf.append(str);
             return;
@@ -60,7 +63,7 @@ public final class ColorUtils {
         buf.append(ANSI_BLUE2).append(str).append(ANSI_RESET);
     }
 
-    public static void gray(StringBuilder buf, String str) {
+    public static void gray(StringBuffer buf, String str) {
         if (isWindows()) {
             buf.append(str);
             return;
