@@ -29,6 +29,7 @@ import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MarkerIgnoringBase;
 import org.slf4j.helpers.MessageFormatter;
 import org.slf4j.impl.utils.ColorUtils;
+import org.slf4j.impl.utils.LogUtils;
 import org.slf4j.spi.LocationAwareLogger;
 
 import java.io.PrintStream;
@@ -156,7 +157,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * The OFF level can only be used in configuration files to disable logging.
      * It has no printing method associated with it in o.s.Logger interface.
      */
-    protected static final int LOG_LEVEL_OFF   = LOG_LEVEL_ERROR + 10;
+    protected static final int LOG_LEVEL_OFF = LOG_LEVEL_ERROR + 10;
 
     private static boolean                   INITIALIZED   = false;
     private static SimpleLoggerConfiguration CONFIG_PARAMS = null;
@@ -287,7 +288,13 @@ public class SimpleLogger extends MarkerIgnoringBase {
 
     private void write(StringBuilder buf, Throwable t) {
         if (CONFIG_PARAMS.outputChoice.outputChoiceType == OutputChoice.OutputChoiceType.FILE) {
-            System.out.println(buf.toString());
+            if (null != t) {
+                String stack = " " + LogUtils.stackTraceToString(t);
+                buf.append(stack);
+                System.err.println(buf.toString());
+            } else{
+                System.out.println(buf.toString());
+            }
             // 写入缓冲队列
             CONFIG_PARAMS.writerTask.addToQueue(CONFIG_PARAMS.logName, buf);
         } else {

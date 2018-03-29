@@ -1,5 +1,7 @@
 package org.slf4j.impl.utils;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -48,12 +50,19 @@ public class LogUtils {
         return null;
     }
 
-    public static void sleep(long ms){
+    public static void sleep(long ms) {
         try {
             TimeUnit.MILLISECONDS.sleep(ms);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public static String stackTraceToString(Throwable e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter  pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        return sw.toString();
     }
 
 }

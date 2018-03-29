@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 public class LoggerTest {
 
     @Test
-    public void testLogger(){
+    public void testLogger() {
         log.debug("Hello World");
         log.info("Hello World");
         log.info("Hello World");
@@ -24,10 +24,18 @@ public class LoggerTest {
 
     @Test
     public void testWhileLog() throws InterruptedException {
-        while (true){
+        while (true) {
             testLogger();
             TimeUnit.SECONDS.sleep(1);
         }
     }
 
+    @Test
+    public void testError() {
+        try {
+            int a = 1 / 0;
+        } catch (Exception e) {
+            log.error("eee", e);
+        }
+    }
 }
