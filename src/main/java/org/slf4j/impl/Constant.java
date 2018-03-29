@@ -8,6 +8,8 @@ public interface Constant {
      */
     String SYSTEM_PREFIX = "com.blade.logger.";
 
+    String DEFAULT_LOG_NAME = "System.out";
+
     String LOG_KEY_PREFIX                 = SYSTEM_PREFIX;
     // com.blade.logger.cacheOutputStream
     String CACHE_OUTPUT_STREAM_STRING_KEY = SYSTEM_PREFIX + "cacheOutputStream";
@@ -15,6 +17,7 @@ public interface Constant {
     String LEVEL_IN_BRACKETS_KEY          = SYSTEM_PREFIX + "levelInBrackets";
     // com.blade.logger.name
     String LOG_NAME_KEY                   = SYSTEM_PREFIX + "name";
+    String APP_NAME_KEY                   = "app.name";
     // com.blade.logger.path
     String LOG_PATH_KEY                   = SYSTEM_PREFIX + "path";
     // com.blade.logger.maxSize

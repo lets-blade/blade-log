@@ -9,6 +9,8 @@ import java.security.PrivilegedAction;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 
+import static org.slf4j.impl.Constant.DEFAULT_LOG_NAME;
+
 /**
  * This class holds configuration values for {@link SimpleLogger}. The
  * values are computed at runtime. See {@link SimpleLogger} documentation for
@@ -39,7 +41,7 @@ public class SimpleLoggerConfiguration {
     int     defaultLogLevel  = SimpleLogger.LOG_LEVEL_INFO;
 
     private String logPath = "./logs";
-    String logName = "System.out";
+    String logName = DEFAULT_LOG_NAME;
 
     WriterTask writerTask;
 
@@ -59,8 +61,10 @@ public class SimpleLoggerConfiguration {
         boolean cacheOutputStream = getBoolProp(Constant.CACHE_OUTPUT_STREAM_STRING_KEY, false);
 
         logName = getStringProp(Constant.LOG_NAME_KEY, logName);
-
-        if (!"System.out".equals(logName)) {
+        if (DEFAULT_LOG_NAME.equals(logName)) {
+            logName = getStringProp(Constant.APP_NAME_KEY, logName);
+        }
+        if (!DEFAULT_LOG_NAME.equals(logName)) {
             logPath = getStringProp(Constant.LOG_PATH_KEY, logPath);
             // 100MB
             long maxSize = getLongProp(Constant.MAX_SIZE_KEY, 1024 * 1024 * 100);
