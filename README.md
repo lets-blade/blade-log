@@ -19,5 +19,17 @@
 
 ```xml
 <dependency>
+    <groupId>com.bladejava</groupId>
+    <artifactId>blade-log</artifactId>
+    <version>0.0.7</version>
 </dependency>
 ```
+
+## 配置
+
+```bash
+com.blade.logger.rootLevel=INFO
+com.blade.logger.path=./logs
+com.blade.logger.name=app
+```
+
