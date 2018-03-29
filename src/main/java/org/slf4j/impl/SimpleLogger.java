@@ -58,7 +58,7 @@ import static org.slf4j.impl.utils.ColorUtils.padLeft;
  * <code>System.out/err</code>.
  * </li>
  * <p>
- * <li><code>org.slf4j.simpleLogger.defaultLogLevel</code> - Default impl level
+ * <li><code>org.slf4j.simpleLogger.rootLevel</code> - Default impl level
  * for all instances of SimpleLogger. Must be one of ("trace", "debug", "info",
  * "warn", "error" or "off"). If not specified, defaults to "info".</li>
  * <p>
@@ -68,7 +68,7 @@ import static org.slf4j.impl.utils.ColorUtils.padLeft;
  * named "a.b.c" is initialized, its level is assigned from this property. If
  * unspecified, the level of nearest parent impl will be used, and if none is
  * set, then the value specified by
- * <code>org.slf4j.simpleLogger.defaultLogLevel</code> will be used.</li>
+ * <code>org.slf4j.simpleLogger.rootLevel</code> will be used.</li>
  * <p>
  * <li><code>org.slf4j.simpleLogger.showDateTime</code> - Set to
  * <code>true</code> if you want the current date and time to be included in
@@ -161,6 +161,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
 
     private static boolean                   INITIALIZED   = false;
     private static SimpleLoggerConfiguration CONFIG_PARAMS = null;
+    private static LogConfig                 config;
 
     static void lazyInit() {
         if (INITIALIZED) {
@@ -176,16 +177,18 @@ public class SimpleLogger extends MarkerIgnoringBase {
     static void init() {
         CONFIG_PARAMS = new SimpleLoggerConfiguration();
         CONFIG_PARAMS.init();
+        config = CONFIG_PARAMS.logConfig;
     }
 
     /**
      * The current impl level
      */
-    protected         int    currentLogLevel = LOG_LEVEL_INFO;
+    private int currentLogLevel;
+
     /**
      * The short name of this simple impl instance
      */
-    private transient String shortLogName    = null;
+    private transient String shortLogName = null;
 
     /**
      * Package access allows only {@link SimpleLoggerFactory} to instantiate
@@ -197,7 +200,43 @@ public class SimpleLogger extends MarkerIgnoringBase {
         if (levelString != null) {
             this.currentLogLevel = SimpleLoggerConfiguration.stringToLevel(levelString);
         } else {
-            this.currentLogLevel = CONFIG_PARAMS.defaultLogLevel;
+            this.currentLogLevel = config.getRootLevel();
+        }
+    }
+
+    public static void config(LogConfig logConfig) {
+        lazyInit();
+        if (null != logConfig) {
+            if (null != logConfig.getShowConsole()) {
+                config.setShowConsole(logConfig.getShowConsole());
+            }
+            if (null != logConfig.getMaxSize()) {
+                config.setMaxSize(logConfig.getMaxSize());
+            }
+            if (null != logConfig.getCacheSize()) {
+                config.setCacheSize(logConfig.getCacheSize());
+            }
+            if (null != logConfig.getWriteInterval()) {
+                config.setWriteInterval(logConfig.getWriteInterval());
+            }
+            if (null != logConfig.getShortLogName()) {
+                config.setShortLogName(logConfig.getShortLogName());
+            }
+            if (null != logConfig.getShowDate()) {
+                config.setShowDate(logConfig.getShowDate());
+            }
+            if (null != logConfig.getShowThread()) {
+                config.setShowThread(logConfig.getShowThread());
+            }
+            if (null != logConfig.getLogDir()) {
+                config.setLogDir(logConfig.getLogDir());
+            }
+            if (null != logConfig.getRootLevel()) {
+                config.setRootLevel(logConfig.getRootLevel());
+            }
+            if (null != logConfig.getLevelInBrackets()) {
+                config.setLevelInBrackets(logConfig.getLevelInBrackets());
+            }
         }
     }
 
@@ -229,12 +268,12 @@ public class SimpleLogger extends MarkerIgnoringBase {
         StringBuilder buf = new StringBuilder(32);
 
         // Append date-time if so configured
-        if (CONFIG_PARAMS.showDateTime) {
+        if (config.getShowDate()) {
             String datetime = getFormattedDate() + ' ';
             ColorUtils.gray(buf, datetime);
         }
 
-        if (CONFIG_PARAMS.levelInBrackets) {
+        if (config.getLevelInBrackets()) {
             buf.append("[ ");
         }
 
@@ -242,24 +281,24 @@ public class SimpleLogger extends MarkerIgnoringBase {
         String levelStr = renderLevel(level);
         buf.append(levelStr);
 
-        if (CONFIG_PARAMS.levelInBrackets) {
+        if (config.getLevelInBrackets()) {
             buf.append(" ]");
         }
         buf.append(' ');
 
         // Append current thread name if so configured
-        if (CONFIG_PARAMS.showThreadName) {
+        if (config.getShowThread()) {
             String threadName = padLeft(Thread.currentThread().getName(), 17);
             ColorUtils.gray(buf, "[ " + threadName + " ] ");
         }
 
         // Append the name of the impl instance if so configured
-        if (CONFIG_PARAMS.showShortLogName) {
+        if (config.getShortLogName()) {
             if (shortLogName == null) {
                 shortLogName = computeShortName();
             }
             ColorUtils.blue(buf, shortLogName + " : ");
-        } else if (CONFIG_PARAMS.showLogName) {
+        } else if (config.getShowLogName()) {
             buf.append(String.valueOf(name)).append(" | ");
         }
 
@@ -288,12 +327,14 @@ public class SimpleLogger extends MarkerIgnoringBase {
 
     private void write(StringBuilder buf, Throwable t) {
         if (CONFIG_PARAMS.outputChoice.outputChoiceType == OutputChoice.OutputChoiceType.FILE) {
-            if (null != t) {
-                String stack = " " + LogUtils.stackTraceToString(t);
-                buf.append(stack);
-                System.err.println(buf.toString());
-            } else{
-                System.out.println(buf.toString());
+            if (config.getShowConsole()) {
+                if (null != t) {
+                    String stack = " " + LogUtils.stackTraceToString(t);
+                    buf.append(stack);
+                    System.err.println(buf.toString());
+                } else {
+                    System.out.println(buf.toString());
+                }
             }
             // 写入缓冲队列
             CONFIG_PARAMS.writerTask.addToQueue(CONFIG_PARAMS.logName, buf);

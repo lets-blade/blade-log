@@ -3,7 +3,6 @@ package org.slf4j.impl;
 import org.slf4j.helpers.Util;
 import org.slf4j.impl.utils.LogUtils;
 
-import java.io.File;
 import java.io.InputStream;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -34,12 +33,7 @@ public class SimpleLoggerConfiguration {
     DateTimeFormatter dateFormatter = null;
     OutputChoice      outputChoice  = null;
 
-    boolean showLogName      = false;
-    boolean showShortLogName = true;
-    boolean levelInBrackets  = false;
-    boolean showThreadName   = true;
-    boolean showDateTime     = true;
-    int     defaultLogLevel  = SimpleLogger.LOG_LEVEL_INFO;
+    LogConfig logConfig = new LogConfig();
 
     String logName;
 
@@ -50,40 +44,51 @@ public class SimpleLoggerConfiguration {
 
         String defaultLogLevelString = getStringProp(Constant.ROOT_LEVEL_KEY, null);
         if (defaultLogLevelString != null) {
-            defaultLogLevel = stringToLevel(defaultLogLevelString);
+            logConfig.setRootLevel(stringToLevel(defaultLogLevelString));
         }
 
-        this.showLogName = getBoolProp(Constant.SHOW_LOG_NAME_KEY, showLogName);
-        this.showShortLogName = getBoolProp(Constant.SHOW_SHORT_NAME_KEY, showShortLogName);
-        this.showDateTime = getBoolProp(Constant.SHOW_DATE_TIME_KEY, showDateTime);
-        this.showThreadName = getBoolProp(Constant.SHOW_THREAD_NAME_KEY, showThreadName);
+        boolean showLogName      = getBoolProp(Constant.SHOW_LOG_NAME_KEY, false);
+        boolean showShortLogName = getBoolProp(Constant.SHOW_SHORT_NAME_KEY, true);
+        boolean showDateTime     = getBoolProp(Constant.SHOW_DATE_TIME_KEY, true);
+        boolean showThreadName   = getBoolProp(Constant.SHOW_THREAD_NAME_KEY, true);
+        boolean showConsole      = getBoolProp(SHOW_CONSOLE_KEY, true);
+        logConfig.setShowLogName(showLogName);
+        logConfig.setShortLogName(showShortLogName);
+        logConfig.setShowDate(showDateTime);
+        logConfig.setShowThread(showThreadName);
+        logConfig.setShowConsole(showConsole);
 
-        String dateTimeFormatStr = getStringProp(Constant.DATE_TIME_FORMAT_KEY, DATE_TIME_FORMAT_STR_DEFAULT);
-        this.levelInBrackets = getBoolProp(Constant.LEVEL_IN_BRACKETS_KEY, levelInBrackets);
+
+        String  datePattern     = getStringProp(Constant.DATE_TIME_FORMAT_KEY, DATE_TIME_FORMAT_STR_DEFAULT);
+        boolean levelInBrackets = getBoolProp(Constant.LEVEL_IN_BRACKETS_KEY, false);
+        logConfig.setLevelInBrackets(levelInBrackets);
 
         boolean cacheOutputStream = getBoolProp(Constant.CACHE_OUTPUT_STREAM_STRING_KEY, false);
+
+        // 100MB
+        long maxSize = getLongProp(Constant.MAX_SIZE_KEY, 1024 * 1024 * 100);
+        // 10KB
+        long cacheSize = getLongProp(Constant.CACHE_SIZE_KEY, 1024 * 10);
+        // 1000ms
+        long writeInterval = getLongProp(Constant.WRITE_INTERVAL_KEY, 1000);
+        logConfig.setMaxSize(maxSize);
+        logConfig.setCacheSize(cacheSize);
+        logConfig.setWriteInterval(writeInterval);
 
         String logDir = getStringProp(Constant.LOG_DIR_KEY, "");
         if (LogUtils.isEmpty(logDir)) {
             this.outputChoice = computeOutputChoice(logDir, cacheOutputStream);
         } else {
+            logConfig.setLogDir(logDir);
             String logName = getStringProp(Constant.LOG_NAME_KEY, "");
             if (logName.isEmpty()) {
                 logName = getStringProp(Constant.APP_NAME_KEY, logName);
             }
-
             this.logName = logName;
 
-            // 100MB
-            long maxSize = getLongProp(Constant.MAX_SIZE_KEY, 1024 * 1024 * 100);
-            // 10KB
-            long cacheSize = getLongProp(Constant.CACHE_SIZE_KEY, 1024 * 10);
-            // 1000ms
-            long writeInterval = getLongProp(Constant.WRITE_INTERVAL_KEY, 1000);
+            outputChoice = new OutputChoice(OutputChoice.OutputChoiceType.FILE);
 
-            String logFilePath = logDir + File.separator + logName;
-            outputChoice = computeOutputChoice(logFilePath, cacheOutputStream);
-            writerTask = new WriterTask(logDir, maxSize, cacheSize, writeInterval);
+            writerTask = new WriterTask(logConfig);
 
             Thread thread = new Thread(writerTask);
             thread.setName("blade-logging");
@@ -93,9 +98,9 @@ public class SimpleLoggerConfiguration {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> writerTask.close()));
         }
 
-        if (dateTimeFormatStr != null) {
+        if (LogUtils.isNotEmpty(datePattern)) {
             try {
-                dateFormatter = DateTimeFormatter.ofPattern(dateTimeFormatStr);
+                dateFormatter = DateTimeFormatter.ofPattern(datePattern);
             } catch (IllegalArgumentException e) {
                 Util.report("Bad date format in " + CONFIGURATION_FILE + "; will output relative time", e);
             }

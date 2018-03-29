@@ -28,18 +28,19 @@ public class WriterTask implements Runnable {
     private Map<String, SimpleLoggerItem> logItemMap = new ConcurrentHashMap<>(8);
 
     private final String logDir;
-    // 100MB
-    private final long   maxSize;
-    // 10KB
-    private final long   cacheSize;
-    // 1000ms
-    private final long   writeInterval;
 
-    public WriterTask(String logDir, long maxSize, long cacheSize, long writeInterval) {
-        this.logDir = logDir;
-        this.maxSize = maxSize;
-        this.cacheSize = cacheSize;
-        this.writeInterval = writeInterval;
+    private long    maxSize;
+    private long    cacheSize;
+    private long    writeInterval;
+
+    private LogConfig logConfig;
+
+    public WriterTask(LogConfig logConfig) {
+        this.logConfig = logConfig;
+        this.logDir = logConfig.getLogDir();
+        this.maxSize = 1024 * 1024 * 10L;//logConfig.getMaxSize();
+        this.cacheSize = logConfig.getCacheSize();
+        this.writeInterval = logConfig.getWriteInterval();
     }
 
     @Override
@@ -111,7 +112,7 @@ public class WriterTask implements Runnable {
             if (currTime >= loggerItem.nextWriteTime || cacheSize <= loggerItem.cacheSize || bIsForce) {
                 this.flushLogger(loggerItem);
             } else {
-                LogUtils.sleep(10);
+//                LogUtils.sleep(10);
             }
         }
     }
