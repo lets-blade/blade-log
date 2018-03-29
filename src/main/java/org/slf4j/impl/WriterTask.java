@@ -159,7 +159,7 @@ public class WriterTask implements Runnable {
         if (LogUtils.isNotEmpty(loggerItem.logPath) && loggerItem.size >= maxSize) {
             File oldFile = new File(loggerItem.logPath);
             if (oldFile.exists()) {
-                String  newFileName = logDir + "/" + loggerItem.lastWriteDate + "/" + loggerItem.logFileName + "_" + LogUtils.getDate() + "_" + LogUtils.getTime() + ".log";
+                String  newFileName = logDir + "/" + loggerItem.logFileName + "_" + LogUtils.getDate() + "_" + LogUtils.getTime() + ".log";
                 File    newFile     = new File(newFileName);
                 boolean flag        = oldFile.renameTo(newFile);
                 if (!flag) {
