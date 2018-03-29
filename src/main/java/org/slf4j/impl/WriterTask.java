@@ -63,7 +63,7 @@ public class WriterTask implements Runnable {
      */
     public void addToQueue(String logFileName, StringBuilder logMsg) {
         // remove color code
-        String newMsg = logMsg.toString().replaceAll("\\[\\d+m", "");
+        String newMsg = logMsg.toString().replaceAll("\u001B\\[\\d+m", "");
         logMsg = new StringBuilder(newMsg).append("\r\n");
         SimpleLoggerItem lfi = logItemMap.get(logFileName);
         if (lfi == null) {

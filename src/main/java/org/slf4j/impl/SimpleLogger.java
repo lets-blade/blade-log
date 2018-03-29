@@ -146,14 +146,16 @@ public class SimpleLogger extends MarkerIgnoringBase {
 
     private static final long serialVersionUID = -632788891211436180L;
 
-    protected static final int LOG_LEVEL_TRACE = LocationAwareLogger.TRACE_INT;
-    protected static final int LOG_LEVEL_DEBUG = LocationAwareLogger.DEBUG_INT;
-    protected static final int LOG_LEVEL_INFO  = LocationAwareLogger.INFO_INT;
-    protected static final int LOG_LEVEL_WARN  = LocationAwareLogger.WARN_INT;
-    protected static final int LOG_LEVEL_ERROR = LocationAwareLogger.ERROR_INT;
-    // The OFF level can only be used in configuration files to disable logging.
-    // It has
-    // no printing method associated with it in o.s.Logger interface.
+    static final int LOG_LEVEL_TRACE = LocationAwareLogger.TRACE_INT;
+    static final int LOG_LEVEL_DEBUG = LocationAwareLogger.DEBUG_INT;
+    static final int LOG_LEVEL_INFO  = LocationAwareLogger.INFO_INT;
+    static final int LOG_LEVEL_WARN  = LocationAwareLogger.WARN_INT;
+    static final int LOG_LEVEL_ERROR = LocationAwareLogger.ERROR_INT;
+
+    /**
+     * The OFF level can only be used in configuration files to disable logging.
+     * It has no printing method associated with it in o.s.Logger interface.
+     */
     protected static final int LOG_LEVEL_OFF   = LOG_LEVEL_ERROR + 10;
 
     private static boolean                   INITIALIZED   = false;
@@ -167,8 +169,9 @@ public class SimpleLogger extends MarkerIgnoringBase {
         init();
     }
 
-    // external software might be invoking this method directly. Do not rename
-    // or change its semantics.
+    /**
+     * external software might be invoking this method directly. Do not rename or change its semantics.
+     */
     static void init() {
         CONFIG_PARAMS = new SimpleLoggerConfiguration();
         CONFIG_PARAMS.init();
@@ -230,15 +233,17 @@ public class SimpleLogger extends MarkerIgnoringBase {
             ColorUtils.gray(buf, datetime);
         }
 
-        if (CONFIG_PARAMS.levelInBrackets)
+        if (CONFIG_PARAMS.levelInBrackets) {
             buf.append("[ ");
+        }
 
         // Append a readable representation of the impl level
         String levelStr = renderLevel(level);
         buf.append(levelStr);
 
-        if (CONFIG_PARAMS.levelInBrackets)
+        if (CONFIG_PARAMS.levelInBrackets) {
             buf.append(" ]");
+        }
         buf.append(' ');
 
         // Append current thread name if so configured
@@ -275,8 +280,9 @@ public class SimpleLogger extends MarkerIgnoringBase {
                 return ColorUtils.yellow(" WARN");
             case LOG_LEVEL_ERROR:
                 return ColorUtils.red("ERROR");
+            default:
+                throw new IllegalStateException("Unrecognized level [" + level + "]");
         }
-        throw new IllegalStateException("Unrecognized level [" + level + "]");
     }
 
     private void write(StringBuilder buf, Throwable t) {
@@ -307,7 +313,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
     }
 
     private String computeShortName() {
-        int           len          = 30;
+        int           len          = 31;
         String[]      packageNames = name.split("\\.");
         StringBuilder shortName    = new StringBuilder();
         int           pos          = 0;
@@ -367,6 +373,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
     /**
      * Are {@code trace} messages currently enabled?
      */
+    @Override
     public boolean isTraceEnabled() {
         return isLevelEnabled(LOG_LEVEL_TRACE);
     }
@@ -375,6 +382,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * A simple implementation which logs messages of level TRACE according to
      * the format outlined above.
      */
+    @Override
     public void trace(String msg) {
         log(LOG_LEVEL_TRACE, msg, null);
     }
@@ -383,6 +391,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * Perform single parameter substitution before logging the message of level
      * TRACE according to the format outlined above.
      */
+    @Override
     public void trace(String format, Object param1) {
         formatAndLog(LOG_LEVEL_TRACE, format, param1, null);
     }
@@ -391,6 +400,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * Perform double parameter substitution before logging the message of level
      * TRACE according to the format outlined above.
      */
+    @Override
     public void trace(String format, Object param1, Object param2) {
         formatAndLog(LOG_LEVEL_TRACE, format, param1, param2);
     }
@@ -399,6 +409,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * Perform double parameter substitution before logging the message of level
      * TRACE according to the format outlined above.
      */
+    @Override
     public void trace(String format, Object... argArray) {
         formatAndLog(LOG_LEVEL_TRACE, format, argArray);
     }
@@ -406,6 +417,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
     /**
      * Log a message of level TRACE, including an exception.
      */
+    @Override
     public void trace(String msg, Throwable t) {
         log(LOG_LEVEL_TRACE, msg, t);
     }
@@ -413,6 +425,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
     /**
      * Are {@code debug} messages currently enabled?
      */
+    @Override
     public boolean isDebugEnabled() {
         return isLevelEnabled(LOG_LEVEL_DEBUG);
     }
@@ -421,6 +434,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * A simple implementation which logs messages of level DEBUG according to
      * the format outlined above.
      */
+    @Override
     public void debug(String msg) {
         log(LOG_LEVEL_DEBUG, msg, null);
     }
@@ -429,6 +443,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * Perform single parameter substitution before logging the message of level
      * DEBUG according to the format outlined above.
      */
+    @Override
     public void debug(String format, Object param1) {
         formatAndLog(LOG_LEVEL_DEBUG, format, param1, null);
     }
@@ -437,6 +452,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * Perform double parameter substitution before logging the message of level
      * DEBUG according to the format outlined above.
      */
+    @Override
     public void debug(String format, Object param1, Object param2) {
         formatAndLog(LOG_LEVEL_DEBUG, format, param1, param2);
     }
@@ -445,6 +461,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * Perform double parameter substitution before logging the message of level
      * DEBUG according to the format outlined above.
      */
+    @Override
     public void debug(String format, Object... argArray) {
         formatAndLog(LOG_LEVEL_DEBUG, format, argArray);
     }
@@ -452,6 +469,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
     /**
      * Log a message of level DEBUG, including an exception.
      */
+    @Override
     public void debug(String msg, Throwable t) {
         log(LOG_LEVEL_DEBUG, msg, t);
     }
@@ -459,6 +477,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
     /**
      * Are {@code info} messages currently enabled?
      */
+    @Override
     public boolean isInfoEnabled() {
         return isLevelEnabled(LOG_LEVEL_INFO);
     }
@@ -467,6 +486,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * A simple implementation which logs messages of level INFO according to
      * the format outlined above.
      */
+    @Override
     public void info(String msg) {
         log(LOG_LEVEL_INFO, msg, null);
     }
@@ -475,6 +495,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * Perform single parameter substitution before logging the message of level
      * INFO according to the format outlined above.
      */
+    @Override
     public void info(String format, Object arg) {
         formatAndLog(LOG_LEVEL_INFO, format, arg, null);
     }
@@ -483,6 +504,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * Perform double parameter substitution before logging the message of level
      * INFO according to the format outlined above.
      */
+    @Override
     public void info(String format, Object arg1, Object arg2) {
         formatAndLog(LOG_LEVEL_INFO, format, arg1, arg2);
     }
@@ -491,6 +513,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * Perform double parameter substitution before logging the message of level
      * INFO according to the format outlined above.
      */
+    @Override
     public void info(String format, Object... argArray) {
         formatAndLog(LOG_LEVEL_INFO, format, argArray);
     }
@@ -498,6 +521,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
     /**
      * Log a message of level INFO, including an exception.
      */
+    @Override
     public void info(String msg, Throwable t) {
         log(LOG_LEVEL_INFO, msg, t);
     }
@@ -505,6 +529,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
     /**
      * Are {@code warn} messages currently enabled?
      */
+    @Override
     public boolean isWarnEnabled() {
         return isLevelEnabled(LOG_LEVEL_WARN);
     }
@@ -513,6 +538,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * A simple implementation which always logs messages of level WARN
      * according to the format outlined above.
      */
+    @Override
     public void warn(String msg) {
         log(LOG_LEVEL_WARN, msg, null);
     }
@@ -521,6 +547,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * Perform single parameter substitution before logging the message of level
      * WARN according to the format outlined above.
      */
+    @Override
     public void warn(String format, Object arg) {
         formatAndLog(LOG_LEVEL_WARN, format, arg, null);
     }
@@ -529,6 +556,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * Perform double parameter substitution before logging the message of level
      * WARN according to the format outlined above.
      */
+    @Override
     public void warn(String format, Object arg1, Object arg2) {
         formatAndLog(LOG_LEVEL_WARN, format, arg1, arg2);
     }
@@ -537,6 +565,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * Perform double parameter substitution before logging the message of level
      * WARN according to the format outlined above.
      */
+    @Override
     public void warn(String format, Object... argArray) {
         formatAndLog(LOG_LEVEL_WARN, format, argArray);
     }
@@ -544,6 +573,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
     /**
      * Log a message of level WARN, including an exception.
      */
+    @Override
     public void warn(String msg, Throwable t) {
         log(LOG_LEVEL_WARN, msg, t);
     }
@@ -551,6 +581,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
     /**
      * Are {@code error} messages currently enabled?
      */
+    @Override
     public boolean isErrorEnabled() {
         return isLevelEnabled(LOG_LEVEL_ERROR);
     }
@@ -559,6 +590,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * A simple implementation which always logs messages of level ERROR
      * according to the format outlined above.
      */
+    @Override
     public void error(String msg) {
         log(LOG_LEVEL_ERROR, msg, null);
     }
@@ -567,6 +599,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * Perform single parameter substitution before logging the message of level
      * ERROR according to the format outlined above.
      */
+    @Override
     public void error(String format, Object arg) {
         formatAndLog(LOG_LEVEL_ERROR, format, arg, null);
     }
@@ -575,6 +608,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * Perform double parameter substitution before logging the message of level
      * ERROR according to the format outlined above.
      */
+    @Override
     public void error(String format, Object arg1, Object arg2) {
         formatAndLog(LOG_LEVEL_ERROR, format, arg1, arg2);
     }
@@ -583,6 +617,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
      * Perform double parameter substitution before logging the message of level
      * ERROR according to the format outlined above.
      */
+    @Override
     public void error(String format, Object... argArray) {
         formatAndLog(LOG_LEVEL_ERROR, format, argArray);
     }
@@ -590,6 +625,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
     /**
      * Log a message of level ERROR, including an exception.
      */
+    @Override
     public void error(String msg, Throwable t) {
         log(LOG_LEVEL_ERROR, msg, t);
     }
