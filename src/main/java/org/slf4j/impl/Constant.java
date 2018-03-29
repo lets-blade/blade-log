@@ -8,7 +8,8 @@ public interface Constant {
      */
     String SYSTEM_PREFIX = "com.blade.logger.";
 
-    String DEFAULT_LOG_NAME = "System.out";
+    String LOG_ERR = "System.err";
+    String LOG_OUT = "System.out";
 
     String LOG_KEY_PREFIX                 = SYSTEM_PREFIX;
     // com.blade.logger.cacheOutputStream
@@ -18,8 +19,8 @@ public interface Constant {
     // com.blade.logger.name
     String LOG_NAME_KEY                   = SYSTEM_PREFIX + "name";
     String APP_NAME_KEY                   = "app.name";
-    // com.blade.logger.path
-    String LOG_PATH_KEY                   = SYSTEM_PREFIX + "path";
+    // com.blade.logger.dir
+    String LOG_DIR_KEY                    = SYSTEM_PREFIX + "dir";
     // com.blade.logger.maxSize
     String MAX_SIZE_KEY                   = SYSTEM_PREFIX + "maxSize";
     // com.blade.logger.cacheSize
@@ -39,4 +40,11 @@ public interface Constant {
     // com.blade.logger.defaultLogLevel
     String ROOT_LEVEL_KEY                 = SYSTEM_PREFIX + "rootLevel";
 
+
+    String TRACE = "trace";
+    String INFO  = "info";
+    String DEBUG = "debug";
+    String WARN  = "warn";
+    String ERROR = "error";
+    String OFF   = "error";
 }

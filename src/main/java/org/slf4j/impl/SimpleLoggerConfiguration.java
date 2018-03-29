@@ -1,6 +1,7 @@
 package org.slf4j.impl;
 
 import org.slf4j.helpers.Util;
+import org.slf4j.impl.utils.LogUtils;
 
 import java.io.File;
 import java.io.InputStream;
@@ -9,7 +10,7 @@ import java.security.PrivilegedAction;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 
-import static org.slf4j.impl.Constant.DEFAULT_LOG_NAME;
+import static org.slf4j.impl.Constant.*;
 
 /**
  * This class holds configuration values for {@link SimpleLogger}. The
@@ -40,8 +41,7 @@ public class SimpleLoggerConfiguration {
     boolean showDateTime     = true;
     int     defaultLogLevel  = SimpleLogger.LOG_LEVEL_INFO;
 
-    private String logPath = "./logs";
-    String logName = DEFAULT_LOG_NAME;
+    String logName;
 
     WriterTask writerTask;
 
@@ -49,23 +49,31 @@ public class SimpleLoggerConfiguration {
         loadProperties();
 
         String defaultLogLevelString = getStringProp(Constant.ROOT_LEVEL_KEY, null);
-        if (defaultLogLevelString != null)
+        if (defaultLogLevelString != null) {
             defaultLogLevel = stringToLevel(defaultLogLevelString);
+        }
 
-        showLogName = getBoolProp(Constant.SHOW_LOG_NAME_KEY, showLogName);
-        showShortLogName = getBoolProp(Constant.SHOW_SHORT_NAME_KEY, showShortLogName);
-        showDateTime = getBoolProp(Constant.SHOW_DATE_TIME_KEY, showDateTime);
-        showThreadName = getBoolProp(Constant.SHOW_THREAD_NAME_KEY, showThreadName);
+        this.showLogName = getBoolProp(Constant.SHOW_LOG_NAME_KEY, showLogName);
+        this.showShortLogName = getBoolProp(Constant.SHOW_SHORT_NAME_KEY, showShortLogName);
+        this.showDateTime = getBoolProp(Constant.SHOW_DATE_TIME_KEY, showDateTime);
+        this.showThreadName = getBoolProp(Constant.SHOW_THREAD_NAME_KEY, showThreadName);
+
         String dateTimeFormatStr = getStringProp(Constant.DATE_TIME_FORMAT_KEY, DATE_TIME_FORMAT_STR_DEFAULT);
-        levelInBrackets = getBoolProp(Constant.LEVEL_IN_BRACKETS_KEY, levelInBrackets);
+        this.levelInBrackets = getBoolProp(Constant.LEVEL_IN_BRACKETS_KEY, levelInBrackets);
+
         boolean cacheOutputStream = getBoolProp(Constant.CACHE_OUTPUT_STREAM_STRING_KEY, false);
 
-        logName = getStringProp(Constant.LOG_NAME_KEY, logName);
-        if (DEFAULT_LOG_NAME.equals(logName)) {
-            logName = getStringProp(Constant.APP_NAME_KEY, logName);
-        }
-        if (!DEFAULT_LOG_NAME.equals(logName)) {
-            logPath = getStringProp(Constant.LOG_PATH_KEY, logPath);
+        String logDir = getStringProp(Constant.LOG_DIR_KEY, "");
+        if (LogUtils.isEmpty(logDir)) {
+            this.outputChoice = computeOutputChoice(logDir, cacheOutputStream);
+        } else {
+            String logName = getStringProp(Constant.LOG_NAME_KEY, "");
+            if (logName.isEmpty()) {
+                logName = getStringProp(Constant.APP_NAME_KEY, logName);
+            }
+
+            this.logName = logName;
+
             // 100MB
             long maxSize = getLongProp(Constant.MAX_SIZE_KEY, 1024 * 1024 * 100);
             // 10KB
@@ -73,9 +81,9 @@ public class SimpleLoggerConfiguration {
             // 1000ms
             long writeInterval = getLongProp(Constant.WRITE_INTERVAL_KEY, 1000);
 
-            String logFilePath = logPath + File.separator + logName;
+            String logFilePath = logDir + File.separator + logName;
             outputChoice = computeOutputChoice(logFilePath, cacheOutputStream);
-            writerTask = new WriterTask(logPath, maxSize, cacheSize, writeInterval);
+            writerTask = new WriterTask(logDir, maxSize, cacheSize, writeInterval);
 
             Thread thread = new Thread(writerTask);
             thread.setName("blade-logging");
@@ -83,9 +91,6 @@ public class SimpleLoggerConfiguration {
             thread.start();
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> writerTask.close()));
-
-        } else {
-            outputChoice = computeOutputChoice(logName, cacheOutputStream);
         }
 
         if (dateTimeFormatStr != null) {
@@ -151,17 +156,17 @@ public class SimpleLoggerConfiguration {
     }
 
     static int stringToLevel(String levelStr) {
-        if ("trace".equalsIgnoreCase(levelStr)) {
+        if (TRACE.equalsIgnoreCase(levelStr)) {
             return SimpleLogger.LOG_LEVEL_TRACE;
-        } else if ("debug".equalsIgnoreCase(levelStr)) {
+        } else if (DEBUG.equalsIgnoreCase(levelStr)) {
             return SimpleLogger.LOG_LEVEL_DEBUG;
-        } else if ("info".equalsIgnoreCase(levelStr)) {
+        } else if (INFO.equalsIgnoreCase(levelStr)) {
             return SimpleLogger.LOG_LEVEL_INFO;
-        } else if ("warn".equalsIgnoreCase(levelStr)) {
+        } else if (WARN.equalsIgnoreCase(levelStr)) {
             return SimpleLogger.LOG_LEVEL_WARN;
-        } else if ("error".equalsIgnoreCase(levelStr)) {
+        } else if (ERROR.equalsIgnoreCase(levelStr)) {
             return SimpleLogger.LOG_LEVEL_ERROR;
-        } else if ("off".equalsIgnoreCase(levelStr)) {
+        } else if (OFF.equalsIgnoreCase(levelStr)) {
             return SimpleLogger.LOG_LEVEL_OFF;
         }
         // assume INFO by default
@@ -169,16 +174,18 @@ public class SimpleLoggerConfiguration {
     }
 
     private static OutputChoice computeOutputChoice(String logFilePath, boolean cacheOutputStream) {
-        if ("System.err".equalsIgnoreCase(logFilePath))
-            if (cacheOutputStream)
+        if (LOG_ERR.equalsIgnoreCase(logFilePath)) {
+            if (cacheOutputStream) {
                 return new OutputChoice(OutputChoice.OutputChoiceType.CACHED_SYS_ERR);
-            else
+            } else {
                 return new OutputChoice(OutputChoice.OutputChoiceType.SYS_ERR);
-        else if ("System.out".equalsIgnoreCase(logFilePath)) {
-            if (cacheOutputStream)
+            }
+        } else if (LOG_OUT.equalsIgnoreCase(logFilePath)) {
+            if (cacheOutputStream) {
                 return new OutputChoice(OutputChoice.OutputChoiceType.CACHED_SYS_OUT);
-            else
+            } else {
                 return new OutputChoice(OutputChoice.OutputChoiceType.SYS_OUT);
+            }
         } else {
             return new OutputChoice(OutputChoice.OutputChoiceType.FILE);
         }
