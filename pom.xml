@@ -6,7 +6,7 @@
 
     <groupId>com.bladejava</groupId>
     <artifactId>blade-log</artifactId>
-    <version>0.0.7</version>
+    <version>0.0.8</version>
     <packaging>jar</packaging>
 
     <name>blade-log</name>

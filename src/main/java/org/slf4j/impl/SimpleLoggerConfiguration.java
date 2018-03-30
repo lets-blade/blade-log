@@ -66,6 +66,11 @@ public class SimpleLoggerConfiguration {
         if (LogUtils.isEmpty(logDir)) {
             this.outputChoice = computeOutputChoice(logDir, cacheOutputStream);
         } else {
+
+            if (logDir.endsWith(".jar")) {
+                logDir = System.getenv("user.dir");
+            }
+
             String logName = getStringProp(Constant.LOG_NAME_KEY, "");
             if (logName.isEmpty()) {
                 logName = getStringProp(Constant.APP_NAME_KEY, logName);
