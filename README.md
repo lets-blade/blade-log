@@ -30,7 +30,7 @@
 
 ```bash
 com.blade.logger.rootLevel=INFO
-com.blade.logger.path=./logs
+com.blade.logger.dir=./logs
 com.blade.logger.name=app
 ```
 
