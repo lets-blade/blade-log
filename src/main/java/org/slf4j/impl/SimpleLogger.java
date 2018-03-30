@@ -279,7 +279,9 @@ public class SimpleLogger extends MarkerIgnoringBase {
                     System.out.println(buf.toString());
                 }
             }
-            CONFIG_PARAMS.writerTask.addToQueue(CONFIG_PARAMS.logName, buf);
+            if(null != CONFIG_PARAMS.writerTask){
+                CONFIG_PARAMS.writerTask.addToQueue(CONFIG_PARAMS.logName, buf);
+            }
         } else {
             PrintStream targetStream = CONFIG_PARAMS.outputChoice.getTargetPrintStream();
 
