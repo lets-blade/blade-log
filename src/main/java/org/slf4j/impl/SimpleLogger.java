@@ -277,6 +277,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
                     System.err.println(buf.toString());
                 } else {
                     System.out.println(buf.toString());
+                    System.out.flush();
                 }
             }
             if(null != CONFIG_PARAMS.writerTask){
