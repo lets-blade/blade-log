@@ -40,8 +40,8 @@ public class LogUtils {
         return null == str || str.length() == 0;
     }
 
-    public static boolean isNotEmpty(String str) {
-        return null != str || str.length() > 0;
+    public static boolean isNotEmpty(String value) {
+        return null != value && !value.isEmpty();
     }
 
     public static String getDate() {

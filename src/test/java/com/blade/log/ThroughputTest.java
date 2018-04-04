@@ -28,7 +28,7 @@ public class ThroughputTest {
         for (int i = 0; i < threadNum; i++) {
             new Thread(() -> {
                 while (messageCount.get() < count) {
-                    log.info(record_400_byte);
+                    log.info(messageCount.get() + ":::::" + record_400_byte);
                     messageCount.incrementAndGet();
                 }
                 latch.countDown();

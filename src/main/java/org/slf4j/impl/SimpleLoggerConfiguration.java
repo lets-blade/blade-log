@@ -41,7 +41,7 @@ public class SimpleLoggerConfiguration {
 
     String logName;
 
-    WriterTask writerTask;
+    FileRunner fileRunner;
 
     void init() {
         loadProperties();
@@ -87,14 +87,15 @@ public class SimpleLoggerConfiguration {
 
             String logFilePath = logDir + File.separator + logName;
             outputChoice = computeOutputChoice(logFilePath, cacheOutputStream);
-            writerTask = new WriterTask(logDir, maxSize, cacheSize, writeInterval);
 
-            Thread thread = new Thread(writerTask);
+            fileRunner = new FileRunner(logName, logDir, maxSize, writeInterval);
+
+            Thread thread = new Thread(fileRunner);
             thread.setName("blade-logging");
             thread.setDaemon(true);
             thread.start();
 
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> writerTask.close()));
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> fileRunner.close()));
         }
 
         if (dateTimeFormatStr != null) {

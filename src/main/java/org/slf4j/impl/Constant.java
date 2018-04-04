@@ -102,7 +102,9 @@ public interface Constant {
      */
     String ROOT_LEVEL_KEY = SYSTEM_PREFIX + "rootLevel";
 
-    Map<Integer, String> LOG_DESC_MAP = new HashMap<Integer, String>() {{
+    Map<Integer, String> LOG_DESC_MAP = new HashMap<Integer, String>() {
+        private static final long serialVersionUID = -8216579733086302246L;
+	    {
         put(0, ColorUtils.gray("TRACE"));
         put(10, ColorUtils.gray("DEBUG"));
         put(20, ColorUtils.green(" INFO"));

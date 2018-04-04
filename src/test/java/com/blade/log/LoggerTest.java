@@ -26,7 +26,7 @@ public class LoggerTest {
     public void testWhileLog() throws InterruptedException {
         while (true) {
             testLogger();
-            TimeUnit.SECONDS.sleep(1);
+//            TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -34,8 +34,10 @@ public class LoggerTest {
     public void testError() {
         try {
             int a = 1 / 0;
+            System.out.println(a);
         } catch (Exception e) {
             log.error("eee", e);
         }
     }
+
 }
