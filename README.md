@@ -9,9 +9,7 @@
 - 输出日志到文件
 - 多种日志级别
 - 不依赖第三方库
-- 双缓冲队列保证高性能
 - 按文件大小切割
-- 百万吞吐量
 
 ## 使用
 
@@ -22,7 +20,7 @@
 <dependency>
     <groupId>com.bladejava</groupId>
     <artifactId>blade-log</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
 </dependency>
 ```
 

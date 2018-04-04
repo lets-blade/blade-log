@@ -22,7 +22,7 @@ public class FileRunner implements Runnable, Closeable {
     private final String logDir;
     private final long   maxSize;
 
-    public FileRunner(String logName, String logDir, long maxSize, long writeInterval) {
+    public FileRunner(String logName, String logDir, long maxSize) {
         this.logName = logName;
         this.logDir = logDir;
         this.maxSize = maxSize;

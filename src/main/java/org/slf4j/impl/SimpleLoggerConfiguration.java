@@ -75,20 +75,18 @@ public class SimpleLoggerConfiguration {
             if (logName.isEmpty()) {
                 logName = getStringProp(Constant.APP_NAME_KEY, logName);
             }
-
+            if (logName.isEmpty()) {
+                logName = "app";
+            }
             this.logName = logName;
 
             // 100MB
             long maxSize = getLongProp(Constant.MAX_SIZE_KEY, 1024 * 1024 * 100);
-            // 10KB
-            long cacheSize = getLongProp(Constant.CACHE_SIZE_KEY, 1024 * 10);
-            // 1000ms
-            long writeInterval = getLongProp(Constant.WRITE_INTERVAL_KEY, 1000);
 
             String logFilePath = logDir + File.separator + logName;
             outputChoice = computeOutputChoice(logFilePath, cacheOutputStream);
 
-            fileRunner = new FileRunner(logName, logDir, maxSize, writeInterval);
+            fileRunner = new FileRunner(logName, logDir, maxSize);
 
             Thread thread = new Thread(fileRunner);
             thread.setName("blade-logging");
