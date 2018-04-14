@@ -39,8 +39,6 @@ public class SimpleLoggerConfiguration {
     boolean showConsole      = true;
     int     defaultLogLevel  = SimpleLogger.LOG_LEVEL_INFO;
 
-    String logName;
-
     FileRunner fileRunner;
 
     void init() {
@@ -78,7 +76,7 @@ public class SimpleLoggerConfiguration {
             if (logName.isEmpty()) {
                 logName = "app";
             }
-            this.logName = logName;
+            String logName1 = logName;
 
             // 100MB
             long maxSize = getLongProp(Constant.MAX_SIZE_KEY, 1024 * 1024 * 100);

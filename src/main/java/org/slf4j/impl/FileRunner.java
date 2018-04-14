@@ -18,9 +18,10 @@ public class FileRunner implements Runnable, Closeable {
 
     private String lastWriteDate;
 
-    private final String logName;
-    private final String logDir;
-    private final long   maxSize;
+    private final    String  logName;
+    private final    String  logDir;
+    private final    long    maxSize;
+    private volatile boolean isRunning;
 
     public FileRunner(String logName, String logDir, long maxSize) {
         this.logName = logName;
@@ -34,6 +35,7 @@ public class FileRunner implements Runnable, Closeable {
         try {
             file.createNewFile();
             out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, true), "utf-8"));
+            isRunning = true;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -42,7 +44,7 @@ public class FileRunner implements Runnable, Closeable {
     @Override
     public void run() {
         while (true) {
-            if (!logQueue.isEmpty()) {
+            if (isRunning && !logQueue.isEmpty()) {
                 this.write();
             } else {
                 LogUtils.sleep(100);
@@ -98,7 +100,6 @@ public class FileRunner implements Runnable, Closeable {
                 this.archive();
             }
             StringBuilder stringBuilder = new StringBuilder();
-
             for (int i = 0; i < 1000; i++) {
                 String msg = logQueue.poll();
                 if (null == msg) {
@@ -117,6 +118,7 @@ public class FileRunner implements Runnable, Closeable {
     @Override
     public void close() {
         try {
+            isRunning = false;
             while (!logQueue.isEmpty()) {
                 this.write();
             }
