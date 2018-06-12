@@ -1,5 +1,7 @@
 package org.slf4j.impl.utils;
 
+import org.slf4j.impl.Ansi;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDate;
@@ -8,8 +10,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import static org.slf4j.impl.utils.ColorUtils.padLeft;
 
 /**
  * Log Utils
@@ -56,11 +56,35 @@ public class LogUtils {
         return LocalTime.now().format(d3);
     }
 
+    public static String padLeft(String s, int n) {
+        return String.format("%1$" + n + "s", s);
+    }
+
+    public static String getColorShortName(String className) {
+        if (CLASS_NAME_CACHE.containsKey(className)) {
+            return CLASS_NAME_CACHE.get(className);
+        }
+        int           len       = 31;
+        StringBuilder shortName = buildShortName(className);
+        String        val       = padLeft(shortName.toString(), len) + " : ";
+        val = Ansi.Blue.format(val);
+        CLASS_NAME_CACHE.put(className, val);
+        return val;
+    }
+
     public static String getShortName(String className) {
         if (CLASS_NAME_CACHE.containsKey(className)) {
             return CLASS_NAME_CACHE.get(className);
         }
-        int           len          = 31;
+        int           len       = 31;
+        StringBuilder shortName = buildShortName(className);
+        String        val       = padLeft(shortName.toString(), len);
+        val = val + " : ";
+        CLASS_NAME_CACHE.put(className, val);
+        return val;
+    }
+
+    private static StringBuilder buildShortName(String className) {
         String[]      packageNames = className.split("\\.");
         StringBuilder shortName    = new StringBuilder();
         int           pos          = 0;
@@ -72,9 +96,17 @@ public class LogUtils {
             }
             pos++;
         }
-        String val = padLeft(shortName.toString(), len);
-        val = ColorUtils.blue(val + " : ");
-        CLASS_NAME_CACHE.put(className, val);
+        return shortName;
+    }
+
+    public static String getColorThreadPadding() {
+        String key = Thread.currentThread().getName();
+        if (THREAD_NAME_CACHE.containsKey(key)) {
+            return THREAD_NAME_CACHE.get(key);
+        }
+        String val = "[ " + padLeft(Thread.currentThread().getName(), 17) + " ] ";
+        val = Ansi.White.format(val);
+        THREAD_NAME_CACHE.put(key, val);
         return val;
     }
 
@@ -84,22 +116,8 @@ public class LogUtils {
             return THREAD_NAME_CACHE.get(key);
         }
         String val = "[ " + padLeft(Thread.currentThread().getName(), 17) + " ] ";
-        val = ColorUtils.gray(val);
         THREAD_NAME_CACHE.put(key, val);
         return val;
-    }
-
-    public static byte[] toBytes(String str) {
-        try {
-            if (str == null || str.length() <= 0) {
-                return new byte[0];
-            } else {
-                return str.getBytes("UTF-8");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     public static void sleep(long ms) {

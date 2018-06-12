@@ -1,7 +1,5 @@
 package org.slf4j.impl;
 
-import org.slf4j.impl.utils.ColorUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -102,15 +100,28 @@ public interface Constant {
      */
     String ROOT_LEVEL_KEY = SYSTEM_PREFIX + "rootLevel";
 
+    /**
+     * com.blade.logger.disableColor
+     */
+    String DISABLE_COLOR = SYSTEM_PREFIX + "disableColor";
+
     Map<Integer, String> LOG_DESC_MAP = new HashMap<Integer, String>() {
         private static final long serialVersionUID = -8216579733086302246L;
-	    {
-        put(0, ColorUtils.gray("TRACE"));
-        put(10, ColorUtils.gray("DEBUG"));
-        put(20, ColorUtils.green(" INFO"));
-        put(30, ColorUtils.yellow(" WARN"));
-        put(40, ColorUtils.red("ERROR"));
-    }};
+
+        {
+            put(0, Ansi.White.and(Ansi.Bold).format("TRACE"));
+            put(10, Ansi.Cyan.and(Ansi.Bold).format("DEBUG"));
+            put(20, Ansi.Green.and(Ansi.Bold).format(" INFO"));
+            put(30, Ansi.Yellow.and(Ansi.Bold).format(" WARN"));
+            put(40, Ansi.Red.and(Ansi.Bold).format("ERROR"));
+
+            put(50, "TRACE");
+            put(60, "DEBUG");
+            put(70, " INFO");
+            put(80, " WARN");
+            put(90, "ERROR");
+        }
+    };
 
     String TRACE = "trace";
     String INFO  = "info";

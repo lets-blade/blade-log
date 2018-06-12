@@ -37,6 +37,7 @@ public class SimpleLoggerConfiguration {
     boolean showThreadName   = true;
     boolean showDateTime     = true;
     boolean showConsole      = true;
+    boolean disableColor     = false;
     int     defaultLogLevel  = SimpleLogger.LOG_LEVEL_INFO;
 
     FileRunner fileRunner;
@@ -54,6 +55,7 @@ public class SimpleLoggerConfiguration {
         this.showDateTime = getBoolProp(Constant.SHOW_DATE_TIME_KEY, showDateTime);
         this.showThreadName = getBoolProp(Constant.SHOW_THREAD_NAME_KEY, showThreadName);
         this.showConsole = getBoolProp(Constant.SHOW_CONSOLE_KEY, showConsole);
+        this.disableColor = getBoolProp(Constant.DISABLE_COLOR, disableColor);
 
         String dateTimeFormatStr = getStringProp(Constant.DATE_TIME_FORMAT_KEY, DATE_TIME_FORMAT_STR_DEFAULT);
         this.levelInBrackets = getBoolProp(Constant.LEVEL_IN_BRACKETS_KEY, levelInBrackets);
@@ -76,7 +78,6 @@ public class SimpleLoggerConfiguration {
             if (logName.isEmpty()) {
                 logName = "app";
             }
-            String logName1 = logName;
 
             // 100MB
             long maxSize = getLongProp(Constant.MAX_SIZE_KEY, 1024 * 1024 * 100);

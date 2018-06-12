@@ -28,7 +28,6 @@ import org.slf4j.event.LoggingEvent;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MarkerIgnoringBase;
 import org.slf4j.helpers.MessageFormatter;
-import org.slf4j.impl.utils.ColorUtils;
 import org.slf4j.impl.utils.LogUtils;
 import org.slf4j.spi.LocationAwareLogger;
 
@@ -181,7 +180,8 @@ public class SimpleLogger extends MarkerIgnoringBase {
     /**
      * The current impl level
      */
-    protected         int    rootLevel;
+    protected int rootLevel;
+
     /**
      * The short name of this simple impl instance
      */
@@ -231,7 +231,11 @@ public class SimpleLogger extends MarkerIgnoringBase {
         // Append date-time if so configured
         if (CONFIG_PARAMS.showDateTime) {
             String datetime = getFormattedDate() + ' ';
-            ColorUtils.gray(buf, datetime);
+            if (CONFIG_PARAMS.disableColor) {
+                buf.append(datetime);
+            } else {
+                buf.append(Ansi.White.format(datetime));
+            }
         }
 
         if (CONFIG_PARAMS.levelInBrackets) {
@@ -239,7 +243,11 @@ public class SimpleLogger extends MarkerIgnoringBase {
         }
 
         // Append a readable representation of the impl level
-        buf.append(LOG_DESC_MAP.get(level));
+        if (CONFIG_PARAMS.disableColor) {
+            buf.append(LOG_DESC_MAP.get(level + 50));
+        } else {
+            buf.append(LOG_DESC_MAP.get(level));
+        }
 
         if (CONFIG_PARAMS.levelInBrackets) {
             buf.append(" ]");
@@ -248,14 +256,14 @@ public class SimpleLogger extends MarkerIgnoringBase {
 
         // Append current thread name if so configured
         if (CONFIG_PARAMS.showThreadName) {
-            String threadName = LogUtils.getThreadPadding();
+            String threadName = CONFIG_PARAMS.disableColor ? LogUtils.getThreadPadding() : LogUtils.getColorThreadPadding();
             buf.append(threadName);
         }
 
         // Append the name of the impl instance if so configured
         if (CONFIG_PARAMS.showShortLogName) {
             if (shortLogName == null) {
-                shortLogName = LogUtils.getShortName(name);
+                shortLogName = CONFIG_PARAMS.disableColor ? LogUtils.getShortName(name) : LogUtils.getColorShortName(name);
             }
             buf.append(shortLogName);
         } else if (CONFIG_PARAMS.showLogName) {
@@ -280,7 +288,7 @@ public class SimpleLogger extends MarkerIgnoringBase {
                     System.out.flush();
                 }
             }
-            if(null != CONFIG_PARAMS.fileRunner){
+            if (null != CONFIG_PARAMS.fileRunner) {
                 CONFIG_PARAMS.fileRunner.addToQueue(buf);
             }
         } else {
