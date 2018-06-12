@@ -117,16 +117,4 @@ public final class Ansi {
         return colorize(text);
     }
 
-    public static void main(String[] args) {
-        System.out.println(Ansi.Red.format("Hello %s", "biezhi"));
-        System.out.println(Ansi.Green.format("Hello %s", "biezhi"));
-        System.out.println(Ansi.Blue.format("Hello %s", "biezhi"));
-        System.out.println(Ansi.Yellow.format("Hello %s", "biezhi"));
-        System.out.println(Ansi.White.format("Hello %s", "biezhi"));
-        System.out.println(Ansi.Blink.format("Hello %s", "biezhi"));
-        System.out.println(Ansi.HighIntensity.format("Hello %s", "biezhi"));
-        System.out.println(Ansi.Magenta.format("Hello %s", "biezhi"));
-        System.out.println(Ansi.Normal.format("Hello %s"));
-    }
-
 }
