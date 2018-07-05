@@ -105,15 +105,31 @@ public class SimpleLoggerConfiguration {
     }
 
     private void loadProperties() {
+        String append = System.getProperty("app.env", "");
+        String suffix = ".properties";
+
         // Add props from the resource app.properties
         InputStream in = AccessController.doPrivileged((PrivilegedAction<InputStream>) () -> {
+            String fileName = append.isEmpty() ? CONFIGURATION_FILE + suffix : CONFIGURATION_FILE + "-" + append + suffix;
+
             ClassLoader threadCL = Thread.currentThread().getContextClassLoader();
             if (threadCL != null) {
-                return threadCL.getResourceAsStream(CONFIGURATION_FILE);
+                return threadCL.getResourceAsStream(fileName);
             } else {
-                return ClassLoader.getSystemResourceAsStream(CONFIGURATION_FILE);
+                return ClassLoader.getSystemResourceAsStream(fileName);
             }
         });
+        if (null == in) {
+            in = AccessController.doPrivileged((PrivilegedAction<InputStream>) () -> {
+                String fileName = append.isEmpty() ? CONFIGURATION_FILE0 + suffix : CONFIGURATION_FILE0 + "-" + append + suffix;
+                ClassLoader threadCL = Thread.currentThread().getContextClassLoader();
+                if (threadCL != null) {
+                    return threadCL.getResourceAsStream(fileName);
+                } else {
+                    return ClassLoader.getSystemResourceAsStream(fileName);
+                }
+            });
+        }
         if (null != in) {
             try {
                 properties.load(in);

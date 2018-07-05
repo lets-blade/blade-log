@@ -7,7 +7,8 @@ public interface Constant {
 
     String DATE_TIME_FORMAT_STR_DEFAULT = "yyyy/MM/dd HH:mm:ss";
 
-    String CONFIGURATION_FILE = "app.properties";
+    String CONFIGURATION_FILE = "application";
+    String CONFIGURATION_FILE0 = "app";
 
     /**
      * All system properties used by <code>SimpleLogger</code> start with this
