@@ -2,6 +2,8 @@
 
 这是一个简单的日志实现，可能是一个简易版的 `logback`。
 
+<a href="http://search.maven.org/#search%7Cga%7C1%7Cblade-log"><img src="https://img.shields.io/maven-central/v/com.hellokaton/blade-log.svg?style=flat-square"></a>
+
 ## 特性
 
 - 格式化日志输出
@@ -17,17 +19,17 @@
 
 ```xml
 <dependency>
-    <groupId>com.bladejava</groupId>
+    <groupId>com.hellokaton</groupId>
     <artifactId>blade-log</artifactId>
-    <version>0.1.6</version>
+    <version>0.2.0</version>
 </dependency>
 ```
 
 ## 配置
 
 ```bash
-com.blade.logger.rootLevel=INFO
-com.blade.logger.dir=./logs
-com.blade.logger.name=app
+logger.name=app
+logger.root-level=INFO
+logger.dir=./logs
 ```
 

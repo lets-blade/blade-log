@@ -4,13 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.bladejava</groupId>
+    <groupId>com.hellokaton</groupId>
     <artifactId>blade-log</artifactId>
-    <version>0.1.6</version>
+    <version>0.2.0</version>
     <packaging>jar</packaging>
 
     <name>blade-log</name>
-    <url>https://github.com/bladejava/blade-log</url>
+    <url>https://github.com/lets-blade/blade-log</url>
     <description>blade log</description>
 
     <licenses>
@@ -21,33 +21,33 @@
     </licenses>
     <developers>
         <developer>
-            <name>biezhi</name>
-            <email>biezhi.me@gmail.com</email>
+            <name>hellokaton</name>
+            <email>hellokaton@gmail.com</email>
         </developer>
     </developers>
     <scm>
-        <connection>scm:git@github.com:bladejava/blade-log.git</connection>
-        <developerConnection>scm:git@github.com/bladejava/blade-log.git</developerConnection>
-        <url>git@github.com:bladejava/blade-log.git</url>
+        <connection>scm:git@github.com:lets-blade/blade-log.git</connection>
+        <developerConnection>scm:git@github.com/lets-blade/blade-log.git</developerConnection>
+        <url>git@github.com:lets-blade/blade-log.git</url>
     </scm>
 
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
+            <version>1.7.36</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.16.20</version>
+            <version>1.18.24</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -118,15 +118,15 @@
             <id>release</id>
             <distributionManagement>
                 <snapshotRepository>
-                    <id>oss</id>
+                    <id>ossrh</id>
                     <url>
-                        https://oss.sonatype.org/content/repositories/snapshots/
+                        https://s01.oss.sonatype.org/content/repositories/snapshots/
                     </url>
                 </snapshotRepository>
                 <repository>
-                    <id>oss</id>
+                    <id>ossrh</id>
                     <url>
-                        https://oss.sonatype.org/service/local/staging/deploy/maven2/
+                        https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/
                     </url>
                 </repository>
             </distributionManagement>

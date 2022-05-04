@@ -14,7 +14,7 @@ public interface Constant {
      * All system properties used by <code>SimpleLogger</code> start with this
      * prefix
      */
-    String SYSTEM_PREFIX = "com.blade.logger.";
+    String SYSTEM_PREFIX = "logger.";
 
     String LOG_ERR = "System.err";
     String LOG_OUT = "System.out";
@@ -22,22 +22,22 @@ public interface Constant {
     String LOG_KEY_PREFIX = SYSTEM_PREFIX;
 
     /**
-     * com.blade.logger.cacheOutputStream
+     * logger.cache-output-stream
      */
-    String CACHE_OUTPUT_STREAM_STRING_KEY = SYSTEM_PREFIX + "cacheOutputStream";
+    String CACHE_OUTPUT_STREAM_STRING_KEY = SYSTEM_PREFIX + "cache-output-stream";
 
     /**
-     * com.blade.logger.levelInBrackets
+     * logger.level-in-brackets
      */
-    String LEVEL_IN_BRACKETS_KEY = SYSTEM_PREFIX + "levelInBrackets";
+    String LEVEL_IN_BRACKETS_KEY = SYSTEM_PREFIX + "level-in-brackets";
 
     /**
-     * com.blade.logger.name
+     * logger.name
      */
     String LOG_NAME_KEY = SYSTEM_PREFIX + "name";
 
     /**
-     * com.blade.logger.config
+     * logger.config
      */
     String LOG_CONFIG_KEY = SYSTEM_PREFIX + "config";
 
@@ -47,64 +47,64 @@ public interface Constant {
     String APP_NAME_KEY = "app.name";
 
     /**
-     * com.blade.logger.dir
+     * logger.dir
      */
     String LOG_DIR_KEY = SYSTEM_PREFIX + "dir";
 
     /**
-     * com.blade.logger.maxSize
+     * logger.max-size
      */
-    String MAX_SIZE_KEY = SYSTEM_PREFIX + "maxSize";
+    String MAX_SIZE_KEY = SYSTEM_PREFIX + "max-size";
 
     /**
-     * com.blade.logger.cacheSize
+     * logger.cache-size
      */
-    String CACHE_SIZE_KEY = SYSTEM_PREFIX + "cacheSize";
+    String CACHE_SIZE_KEY = SYSTEM_PREFIX + "cache-size";
 
     /**
-     * com.blade.logger.writeInterval
+     * logger.write-interval
      */
-    String WRITE_INTERVAL_KEY = SYSTEM_PREFIX + "writeInterval";
+    String WRITE_INTERVAL_KEY = SYSTEM_PREFIX + "write-interval";
 
     /**
-     * com.blade.logger.showShortName
+     * logger.short-name
      */
-    String SHOW_SHORT_NAME_KEY = SYSTEM_PREFIX + "shortName";
+    String SHOW_SHORT_NAME_KEY = SYSTEM_PREFIX + "short-name";
 
     /**
-     * com.blade.logger.showLogName
+     * logger.show-log-name
      */
-    String SHOW_LOG_NAME_KEY = SYSTEM_PREFIX + "showLogName";
+    String SHOW_LOG_NAME_KEY = SYSTEM_PREFIX + "show-log-name";
 
     /**
-     * com.blade.logger.showThreadName
+     * logger.show-thread-name
      */
-    String SHOW_THREAD_NAME_KEY = SYSTEM_PREFIX + "showThread";
+    String SHOW_THREAD_NAME_KEY = SYSTEM_PREFIX + "show-thread";
 
     /**
-     * com.blade.logger.datePattern
+     * logger.datePattern
      */
-    String DATE_TIME_FORMAT_KEY = SYSTEM_PREFIX + "datePattern";
+    String DATE_TIME_FORMAT_KEY = SYSTEM_PREFIX + "date-pattern";
 
     /**
-     * com.blade.logger.showDate
+     * logger.showDate
      */
-    String SHOW_DATE_TIME_KEY = SYSTEM_PREFIX + "showDate";
+    String SHOW_DATE_TIME_KEY = SYSTEM_PREFIX + "show-date";
 
     /**
-     * com.blade.logger.console
+     * logger.console
      */
     String SHOW_CONSOLE_KEY = SYSTEM_PREFIX + "console";
 
     /**
-     * com.blade.logger.rootLevel
+     * logger.root-level
      */
-    String ROOT_LEVEL_KEY = SYSTEM_PREFIX + "rootLevel";
+    String ROOT_LEVEL_KEY = SYSTEM_PREFIX + "root-level";
 
     /**
-     * com.blade.logger.disableColor
+     * logger.disable-color
      */
-    String DISABLE_COLOR = SYSTEM_PREFIX + "disableColor";
+    String DISABLE_COLOR = SYSTEM_PREFIX + "disable-color";
 
     Map<Integer, String> LOG_DESC_MAP = new HashMap<Integer, String>() {
         private static final long serialVersionUID = -8216579733086302246L;
@@ -125,9 +125,9 @@ public interface Constant {
     };
 
     String TRACE = "trace";
-    String INFO  = "info";
+    String INFO = "info";
     String DEBUG = "debug";
-    String WARN  = "warn";
+    String WARN = "warn";
     String ERROR = "error";
-    String OFF   = "error";
+    String OFF = "error";
 }
