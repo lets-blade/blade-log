@@ -38,6 +38,7 @@ public class SimpleLoggerConfiguration {
     boolean showDateTime     = true;
     boolean showConsole      = true;
     boolean disableColor     = false;
+    boolean openTraceId      = false;
     int     defaultLogLevel  = SimpleLogger.LOG_LEVEL_INFO;
 
     FileRunner fileRunner;
@@ -56,6 +57,7 @@ public class SimpleLoggerConfiguration {
         this.showThreadName = getBoolProp(Constant.SHOW_THREAD_NAME_KEY, showThreadName);
         this.showConsole = getBoolProp(Constant.SHOW_CONSOLE_KEY, showConsole);
         this.disableColor = getBoolProp(Constant.DISABLE_COLOR, disableColor);
+        this.openTraceId = getBoolProp(OPEN_TRACE_ID,openTraceId);
 
         String dateTimeFormatStr = getStringProp(Constant.DATE_TIME_FORMAT_KEY, DATE_TIME_FORMAT_STR_DEFAULT);
         this.levelInBrackets = getBoolProp(Constant.LEVEL_IN_BRACKETS_KEY, levelInBrackets);

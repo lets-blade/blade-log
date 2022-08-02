@@ -260,6 +260,15 @@ public class SimpleLogger extends MarkerIgnoringBase {
             buf.append(threadName);
         }
 
+        if(CONFIG_PARAMS.openTraceId){
+            String traceId = MDC.get("traceId");
+            if(null != traceId){
+                buf.append("[traceId: ");
+                buf.append(traceId);
+                buf.append("] ");
+            }
+        }
+
         // Append the name of the impl instance if so configured
         if (CONFIG_PARAMS.showShortLogName) {
             if (shortLogName == null) {

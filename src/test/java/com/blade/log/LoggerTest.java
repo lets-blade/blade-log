@@ -2,7 +2,12 @@ package com.blade.log;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
+import org.slf4j.impl.MDC;
 
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -40,4 +45,42 @@ public class LoggerTest {
         }
     }
 
+
+    @Test
+    public void testMDCLog() throws InterruptedException {
+
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        executorService.execute(this::testMDCLogAsync);
+        executorService.execute(this::testMDCLogAsync);
+        TimeUnit.SECONDS.sleep(10);
+        System.out.println("over");
+    }
+
+    private void testMDCLogAsync() {
+        try {
+
+            log.info("Hello World");
+            MDC.put("traceId", UUID.randomUUID().toString());
+
+            new Thread(() -> {
+                log.info("Thread ,test traceId");
+            }).start();
+
+            Executors.newFixedThreadPool(1).execute(() -> {
+                log.info("newFixedThreadPool,test traceId");
+            });
+
+            CompletableFuture.runAsync(() -> {
+                log.info("CompletableFuture ,test traceId");
+            }).join();
+
+            TimeUnit.SECONDS.sleep(5);
+            MDC.clear();
+            log.info("Hello World");
+        } catch (Exception e) {
+            log.error("eee", e);
+        }
+
+
+    }
 }

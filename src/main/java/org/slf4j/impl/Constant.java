@@ -106,6 +106,11 @@ public interface Constant {
      */
     String DISABLE_COLOR = SYSTEM_PREFIX + "disable-color";
 
+    /**
+     * logger.open-trace-id
+     */
+    String OPEN_TRACE_ID = SYSTEM_PREFIX + "open-trace-id";
+
     Map<Integer, String> LOG_DESC_MAP = new HashMap<Integer, String>() {
         private static final long serialVersionUID = -8216579733086302246L;
 
