@@ -50,13 +50,13 @@ public class LoggerTest {
     public void testMDCLog() throws InterruptedException {
 
         ExecutorService executorService = Executors.newFixedThreadPool(3);
-        executorService.execute(this::testMDCLogAsyn);
-        executorService.execute(this::testMDCLogAsyn);
+        executorService.execute(this::testMDCLogAsync);
+        executorService.execute(this::testMDCLogAsync);
         TimeUnit.SECONDS.sleep(10);
         System.out.println("over");
     }
 
-    private void testMDCLogAsyn() {
+    private void testMDCLogAsync() {
         try {
 
             log.info("Hello World");
