@@ -48,24 +48,39 @@ public class LoggerTest {
 
     @Test
     public void testMDCLog() throws InterruptedException {
-        log.info("Hello World");
-        MDC.put("traceId", UUID.randomUUID().toString());
 
-        new Thread(()->{
-            log.info("Thread ,test traceId");
-        }).start();
-
-        Executors.newFixedThreadPool(1).execute(()->{
-            log.info("newFixedThreadPool,test traceId");
-        });
-
-        CompletableFuture.runAsync(()->{
-            log.info("CompletableFuture ,test traceId");
-        }).join();
-
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        executorService.execute(this::testMDCLogAsyn);
+        executorService.execute(this::testMDCLogAsyn);
         TimeUnit.SECONDS.sleep(10);
-        MDC.clear();
-        log.info("Hello World");
+        System.out.println("over");
+    }
+
+    private void testMDCLogAsyn() {
+        try {
+
+            log.info("Hello World");
+            MDC.put("traceId", UUID.randomUUID().toString());
+
+            new Thread(()->{
+                log.info("Thread ,test traceId");
+            }).start();
+
+            Executors.newFixedThreadPool(1).execute(()->{
+                log.info("newFixedThreadPool,test traceId");
+            });
+
+            CompletableFuture.runAsync(()->{
+                log.info("CompletableFuture ,test traceId");
+            }).join();
+
+            TimeUnit.SECONDS.sleep(5);
+            MDC.clear();
+            log.info("Hello World");
+        }catch (Exception e){
+            log.error("eee", e);
+        }
+
 
     }
 }
