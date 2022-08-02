@@ -40,7 +40,7 @@ public class MDC {
     }
 
     /**
-     * 使用@base
+     * 使用{@link BasicMDCAdapter} 作为默认的MDCAdapter
      *
      * @return MDCAdapter
      * @throws NoClassDefFoundError in case no binding is available

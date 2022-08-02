@@ -62,22 +62,22 @@ public class LoggerTest {
             log.info("Hello World");
             MDC.put("traceId", UUID.randomUUID().toString());
 
-            new Thread(()->{
+            new Thread(() -> {
                 log.info("Thread ,test traceId");
             }).start();
 
-            Executors.newFixedThreadPool(1).execute(()->{
+            Executors.newFixedThreadPool(1).execute(() -> {
                 log.info("newFixedThreadPool,test traceId");
             });
 
-            CompletableFuture.runAsync(()->{
+            CompletableFuture.runAsync(() -> {
                 log.info("CompletableFuture ,test traceId");
             }).join();
 
             TimeUnit.SECONDS.sleep(5);
             MDC.clear();
             log.info("Hello World");
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("eee", e);
         }
 
